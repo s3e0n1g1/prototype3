@@ -15,7 +15,8 @@ import Selecting_Algothrim.Strategy;
 import Selecting_Algothrim.Trade;
 import Trading_Engine.myDatabase;
 
-
+//commit
+// then push
 
 public class Mainmenu  extends JFrame{
 	public File csv = null;

@@ -19,6 +19,115 @@ public class myDatabase {
 		}
 		deleteAllTables();
 	}
+	public static void insertAllDatabase (Connection con, BufferedReader br, String newHead){
+		try {
+			String st = "";
+			String preInsertQuery = "insert into all_list(" + newHead + ")values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			PreparedStatement orderBookQuery = con.prepareStatement(preInsertQuery);
+			con.setAutoCommit(false);
+			int enter = 0;
+			int ask = 0;
+			int bid =0;
+			int amend = 0;
+			int delete = 0;
+			int trade = 0;
+			int other = 0;
+			while ((st=br.readLine())!=null){
+				String[] insertElement = st.split(",");
+				if(insertElement[3].equalsIgnoreCase("ENTER") ){
+					enter++;
+					if(insertElement[12].equalsIgnoreCase("A")){
+						ask++;
+					}else{
+						bid++;
+					}
+				}else if(insertElement[3].equalsIgnoreCase("AMEND") ){
+					amend++;
+				}else if(insertElement[3].equalsIgnoreCase("DELETE") ){
+					delete++;
+				}else if(insertElement[3].equalsIgnoreCase("TRADE") ){
+					trade++;
+				}else{
+					other++;
+				}
+				insertQuery(orderBookQuery,insertElement);
+			}
+			int[] i1 = orderBookQuery.executeBatch();
+
+			
+			System.out.println("i1 length: " + i1.length + " == " + (enter + amend + delete + trade + other));
+			System.out.println("enter: " + enter + " ask: " + ask + " bid " + bid);
+			System.out.println("amend: " + amend);
+			System.out.println("delete: " + delete);
+			System.out.println("trade: " + trade);
+			
+			orderBookQuery.close();
+		}catch(Exception e){
+			System.out.println("In insertAllDatabase: " + e);
+		}
+	}
+	public void insertAll(File f) {
+		try {
+			Statement s = connection.createStatement();
+			BufferedReader br = new BufferedReader(new FileReader(f));
+			String head = "";
+			if((head=br.readLine())!=null){
+				System.out.println("first character of head: " + head.charAt(0));
+				if(head.charAt(0)== '#'){
+					String[] tableElement = head.split(",");
+					tableElement[3] = "Record_Type";
+					tableElement[6] = "Undisclosed_Volume";
+					tableElement[9] = "Trans_ID";
+					tableElement[10] = "Bid_ID";
+					tableElement[11] = "Ask_ID";
+					tableElement[12] = "Bid_Ask";
+					tableElement[13] = "Entry_Time";
+					tableElement[14] = "Old_Price";
+					tableElement[15] = "Old_Volume";
+					tableElement[16] = "Buyer_Broker_ID";
+					tableElement[17] = "Seller_Broker_ID";
+					String tableQuery = tableElement[0].substring(1) + " varchar(3), " +
+							tableElement[1] + " date, " +
+							tableElement[2] + " time, " +
+							"millisecond" + " integer, "+
+							tableElement[3] + " text, " +
+							tableElement[4] + " float, " +
+							tableElement[5] + " integer, " +
+							tableElement[6] + " integer, " +
+							tableElement[7] + " float, " +
+							tableElement[8] + " text, " +
+							tableElement[9] + " integer, " +
+							tableElement[10] + " bigint, " +
+							tableElement[11] + " bigint, " +
+							tableElement[12] + " varchar(1), " +
+							tableElement[13] + " time, " +
+							tableElement[14] + " float, " +
+							tableElement[15] + " integer, " +
+							tableElement[16] + " integer, " +
+							tableElement[17] + " integer ";
+					String newHead = tableElement[0].substring(1);
+					for(int i = 1; i < tableElement.length; i++){
+						newHead += " , " + tableElement[i];
+						if(i == 2){
+							newHead += " , " + "millisecond";
+						}
+					}
+					System.out.println(tableQuery);
+					s.execute("create table all_list(" + tableQuery + ")");
+					insertAllDatabase(connection,br,newHead);
+				} else {
+					System.out.println("Error: file content not csv format");
+				}
+			}else {
+				System.out.println("Error: file is empty");
+			}
+			br.close();
+			s.close();
+		}catch (Exception e) {
+			System.out.println("In insertAll:  " + e);
+		}
+		
+	}
 	public static void deleteAllTables(){
 		try {
 			Statement statement = connection.createStatement();
@@ -362,7 +471,7 @@ public class myDatabase {
 			Double tmp;
 			while (rs.next()){
 				tmp = rs.getDouble(6);
-				System.out.println("tmp: " + tmp);
+				//System.out.println("tmp: " + tmp);
 				trade.addPice(tmp);
 			};
 			rs.close();
@@ -378,6 +487,87 @@ public class myDatabase {
 			connection.close();
 		} catch (Exception e) {
 			System.out.println("Error closing database : " + e);
+		}
+	}
+	public ResultSet getResultSet(String query) {
+		ResultSet set = null;
+		try{
+			Statement statement = connection.createStatement();
+			set = statement.executeQuery(query);
+		}catch(Exception e){
+			System.out.println("In getResultSet:  " + e);
+		}
+		return set;
+	}
+	public void initTwoList() {
+		String tableQuery = "ID" + " bigint, " + "Price" + " float, " + "Volume" + "integer ";
+		
+		try{
+			Statement s = connection.createStatement();
+			s.execute("create table bid_list(" + tableQuery + ")");
+			s.execute("create table ask_list(" + tableQuery + ")");
+			
+			s.close();
+		}catch (Exception e){
+			System.out.println("In initTwoList:  " + e);
+		}
+	}
+	public void closeTwoList() {
+		try{
+			Statement s = connection.createStatement();
+
+			s.close();
+		}catch (Exception e){
+			System.out.println("In closeTwoList:  " + e);
+		}
+	}
+	public void insertBidList(long tmpID, double tmpPrice, int tmpVol) {
+		String preInsertQuery = "insert into bid_list values(?,?,?)";
+		try{
+			PreparedStatement bidListQuery = connection.prepareStatement(preInsertQuery);
+			bidListQuery.setLong(1, tmpID);
+			bidListQuery.setDouble(2, tmpPrice);
+			bidListQuery.setInt(3, tmpVol);
+			bidListQuery.executeUpdate();
+			
+			bidListQuery.close();
+		}catch (Exception e){
+			System.out.println("In insertBidList:  " + e);
+		}
+	}
+	public void insertAskList(long tmpID, double tmpPrice, int tmpVol) {
+		String preInsertQuery = "insert into ask_list values(?,?,?)";
+		try{
+			PreparedStatement askListQuery = connection.prepareStatement(preInsertQuery);
+			askListQuery.setLong(1, tmpID);
+			askListQuery.setDouble(2, tmpPrice);
+			askListQuery.setInt(3, tmpVol);
+			askListQuery.executeUpdate();
+			
+			askListQuery.close();
+		}catch (Exception e){
+			System.out.println("In insertAskList:  " + e);
+		}
+	}
+	public void printTwoList() {
+		try{
+			Statement s = connection.createStatement();
+			ResultSet rs = s.executeQuery("SELECT count(*) FROM bid_list;");
+			if(rs!=null){
+				if(rs.next()){
+					System.out.println("bid_list contains " + rs.getString(1) + " lines.\n");
+				}
+			}
+			rs = s.executeQuery("SELECT count(*) FROM ask_list;");
+			if(rs!=null){
+				if(rs.next()){
+					System.out.println("ask_list contains " + rs.getString(1) + " lines.\n");
+				}
+			}
+			rs.close();
+			s.close();
+		}catch (Exception e){
+			System.out.println("In printTwoList:  " + e);
 		}
 	}
 }

@@ -4,40 +4,47 @@ import java.awt.event.*;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 
 import javax.swing.*; 
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 import javax.swing.text.DefaultCaret;
 
 import Selecting_Algothrim.MomentumStrategy;
 import Selecting_Algothrim.Strategy;
 import Selecting_Algothrim.Trade;
+import Selecting_Algothrim.newMomentum;
+import Selecting_Algothrim.orderObject;
+import Selecting_Algothrim.signalObject;
 import Trading_Engine.myDatabase;
 import Trading_Engine.myTrade;
-
-//commit
-// then push
 
 public class Mainmenu  extends JFrame{
 	public File csv = null;
 	public JTextArea console;
 	public JComboBox choosestrat;		
 	public myDatabase myDB;
+	private OrderbookTable buytable;
+	private OrderbookTable selltable;
 	public Mainmenu(myDatabase db) { 
 		myDB = db;
+		buytable = new OrderbookTable();
+		selltable = new OrderbookTable();
 		JPanel pane = new JPanel();
-		//pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
 		Container con = this.getContentPane();
 		con.add(pane); 
-		setTitle("Prototype 2"); 
-		//setLayout(null);
-		setSize(800,600);
+		setTitle("Prototype ATS"); 
+		setSize(1000,800);
 		setLocationRelativeTo( null );
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
-		pane.setBorder(new EmptyBorder(10, 0, 0, 0) );
-
+		//pane.setBorder(new EmptyBorder(5, 0, 0, 0) );
+		JPanel menu = new JPanel();
+		//menu.setBorder(new EmptyBorder(0, 0, 0, 0) );
 		JButton loadfile = new JButton("Load CSV File");
 		loadfile.addActionListener(
 				new ActionListener() {
@@ -48,29 +55,29 @@ public class Mainmenu  extends JFrame{
 						if(returnVal == JFileChooser.APPROVE_OPTION){
 							csv = chooser.getSelectedFile();
 							try {
-								myDB.insertFromFile(csv);
+								myDB.insertAll(csv);
 							} catch (Exception e) {
 								console.append("Cannot insert csv to database\n");
 							}
-							String tmp = myDB.getRowCount();
-							console.append(tmp);
-							console.append("CSV loaded.\n Please select a strategy.\n");
+							//String tmp = myDB.getRowCount();
+							//console.append(tmp);
+							console.append("CSV loaded.\nPlease select a strategy.\n");
 						}
 					}
 				});
-		pane.add(loadfile);		
+		menu.add(loadfile);		
 		JLabel select= new JLabel("Selected Strategy");
-		pane.add(select);
+		menu.add(select);
 
 		String[] strategies = {"Momentum"};
 		choosestrat = new JComboBox(strategies);
 		choosestrat.setSelectedIndex(0);
 		choosestrat.setPrototypeDisplayValue("XXXXXXXXXXXXXXXXXXXXXXX");
-		pane.add(choosestrat);
+		menu.add(choosestrat);
 		choosestrat.setVisible(true);
 
 		JButton runstrategy = new JButton("Run Strategy");
-		pane.add(runstrategy);
+		menu.add(runstrategy);
 		runstrategy.addActionListener(
 				new ActionListener() {
 					public void actionPerformed(ActionEvent event) {
@@ -78,36 +85,87 @@ public class Mainmenu  extends JFrame{
 							console.append("Please load a csv file before running\n");
 						} else {
 							console.append("Running strategy " + choosestrat.getSelectedItem().toString()+ "\n");
-						
+
 							if (choosestrat.getSelectedIndex() == 0) { //momentum
 								//todo: move strategy related functions to strategy package
-								myTrade rs = myDB.getTrade("SELECT * FROM trade_list ORDER BY Entry_Time DESC limit 1000;");							
-								if(rs.getLength() > 0){
-									//int i = 0;
-									double result;
+								//myTrade rs = myDB.getTrade("SELECT * FROM trade_list ORDER BY Entry_Time DESC limit 1000;");
+								try {
+									ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
+									if(set != null){
+										int count = 0;
+										String tmp;
+										String tmpType;
+										double tmpPrice;
+										int tmpVol;
+										long tmpID;
+										newMomentum moment = new newMomentum();
+										signalObject tempSignal;
+										orderObject lastSale = new orderObject( -1, -1);
+										orderObject lastBuy = new orderObject( -1, -1);
+										myDB.initTwoList();
+										while (set.next()){
+											tmp = set.getString(5);
+											tmpType = set.getString(14);
+											if(tmp.equalsIgnoreCase("ENTER")){
+												tmpPrice = set.getDouble(6);
+												tmpVol = set.getInt(7);
+												moment.addTrade(tmpPrice);
+												tempSignal = moment.generateOrderSignal(lastSale, lastBuy);
+												if(tmpType.equalsIgnoreCase("B")){
+													tmpID = set.getLong(12);
+													lastBuy = new orderObject(tmpVol,tmpPrice);
+													myDB.insertBidList(tmpID,tmpPrice,tmpVol);
+													buytable.setValueAt("1", 1, 0);
+													buytable.setValueAt(tmpID, 1, 1);
+													buytable.setValueAt(tmpPrice, 1, 2);
+													buytable.setValueAt(tmpVol, 1, 3);
+												}else if(tmpType.equalsIgnoreCase("A")){
+													tmpID = set.getLong(13);
+													lastSale = new orderObject(tmpVol,tmpPrice);
+													myDB.insertAskList(tmpID,tmpPrice,tmpVol);
+													selltable.setValueAt("1", 1, 0);
+													selltable.setValueAt(tmpID, 1, 1);
+													selltable.setValueAt(tmpPrice, 1, 2);
+													selltable.setValueAt(tmpVol, 1, 3);
+												}
+												if(tempSignal.getType().equalsIgnoreCase("buy")){
+													System.out.println("buy generated - count " + count);
+												}else if(tempSignal.getType().equalsIgnoreCase("sell")){
+													System.out.println("sell generated - count " + count);
+												}
+												
+												
+											}
+											count++;
+										};
+										System.out.println("count : " + count);
+										myDB.printTwoList();
+										myDB.closeTwoList();
+									}else{
+										System.out.println("set equals null");
+									}
 									
-									MomentumStrategy ms = new MomentumStrategy();
-									ms.runStrategy(rs.getAllPrice());
-									result = ms.evaluteTheStrategy();
 									/*
-									Strategy momentum = new Strategy();
-									Trade fst = new Trade(null, null, null, Double.parseDouble(a[0]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
-									Trade snd = new Trade(null, null, null, Double.parseDouble(a[1]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
-									i = 1;			
-									while (i < 19){
-										momentum.getReturn(fst, snd);
-										fst = snd;
-										i = i + 1;
-										snd = new Trade(null, null, null,Double.parseDouble(a[i]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
-									}*/
-									console.append("Average return of " + Double.toString(result) + "\n");
-									String signal = "Buy";
+									if(rs.getLength() > 0){
+										//int i = 0;
+										double result;
 
-									if (result > 0.0)
-										signal = "Sell";
-									console.append("Evaluating strategy based on: "+ signal + " Signal \n");
-								} else {
-									console.append("rs null");
+										MomentumStrategy ms = new MomentumStrategy();
+										ms.runStrategy(rs.getAllPrice());
+										result = ms.evaluteTheStrategy();
+										console.append("Average return of " + Double.toString(result) + "\n");
+										String signal = "Buy";
+
+										if (result > 0.0)
+											signal = "Sell";
+										console.append("Evaluating strategy based on: "+ signal + " Signal \n");
+									} else {
+										console.append("rs null");
+									}*/
+									
+									set.close();
+								} catch (SQLException e) {
+									System.out.println("In Mainmenu/runStrategy : " + e);
 								}
 							}
 							//==	
@@ -115,13 +173,14 @@ public class Mainmenu  extends JFrame{
 					}
 				});
 
-
+		pane.add(menu);
 		console = new JTextArea("Prototype 2 Loaded. Please load a CSV file.\n");
 		console.setBorder(BorderFactory.createLineBorder(Color.black));
 		console.setEditable(false);
 		console.setMargin(new Insets(10,10,10,10));
 		JScrollPane consoletext = new JScrollPane(console); 
-		consoletext.setPreferredSize(new Dimension(550, 450));
+		consoletext.setPreferredSize(new Dimension(600, 450));
+		consoletext.setMaximumSize((new Dimension(600, 450)));
 		consoletext.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		DefaultCaret caret = (DefaultCaret)console.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
@@ -131,10 +190,12 @@ public class Mainmenu  extends JFrame{
 		quitButton.setBounds(50, 60, 80, 30);
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
+				myDB.closeDatabase();
 				System.exit(0);
 
 			}
 		});
+
 		addWindowListener(new WindowAdapter(){
 			@Override
 			public void windowClosing(WindowEvent e){
@@ -142,7 +203,57 @@ public class Mainmenu  extends JFrame{
 				System.exit(0);
 			}
 		});
-		//pane.add(quitButton);
+
+		menu.add(quitButton);
+
+		String originaltimestamp = "2010-07-14 09:00:02";
+		Date date= null;
+		try {
+			date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(originaltimestamp);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		String timestamp = new SimpleDateFormat("H:mm").format(date); // 9:00
+		String [] tableColumnNames = {"Order Type", "Bid Price", "Bid Volume", "Timestamp", "Status"};
+		Object[][] fakedata = {
+				{"Buy", new Long(12), new Double(200), new Integer(0), "" },
+				{"Buy", new Long(10), new Double(20), new Integer(0),"" },
+				{"Buy", new Long(9), new Double(150), new Integer(0),"Matched" },
+				{"Sell", new Long(12), new Double(200),new Integer(0),"" },
+				{"Buy", new Long(10), new Double(20), new Integer(0),"" },
+				{"Sell", new Long(9), new Double(150), new Integer(0),"Matched" }
+		};
+		JTable buybook = new JTable();
+		buybook.setModel(buytable);
+		buytable.setData(fakedata);
+		JScrollPane scrollTable = new JScrollPane(buybook);
+		buybook.setFillsViewportHeight(true);
+		scrollTable.setPreferredSize(new Dimension(450,120));
+		scrollTable.setMaximumSize(new Dimension(450,150));		
+		pane.add(scrollTable);
+
+		JTable sellbook = new JTable();
+		sellbook.setModel(selltable);
+		selltable.setData(fakedata);
+		JScrollPane sellTable = new JScrollPane(sellbook);
+		buybook.setFillsViewportHeight(true);
+		sellTable.setPreferredSize(new Dimension(450,120));
+		sellTable.setMaximumSize(new Dimension(450,150));		
+
+
+		JPanel buypanel = new JPanel();
+		buypanel.setLayout(new BoxLayout(buypanel, BoxLayout.PAGE_AXIS));
+		buypanel.add(new JLabel ("Buy"));
+		buypanel.add(scrollTable);
+
+		JPanel sellpanel = new JPanel();
+		sellpanel.add(new JLabel ("Sell"));
+		sellpanel.add(sellTable);
+		sellpanel.setLayout(new BoxLayout(sellpanel, BoxLayout.PAGE_AXIS));
+
+		pane.add(buypanel);
+		pane.add(sellpanel);
+
 		setVisible(true);		
 	}
 

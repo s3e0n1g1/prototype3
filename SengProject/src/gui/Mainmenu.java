@@ -14,6 +14,7 @@ import Selecting_Algothrim.MomentumStrategy;
 import Selecting_Algothrim.Strategy;
 import Selecting_Algothrim.Trade;
 import Trading_Engine.myDatabase;
+import Trading_Engine.myTrade;
 
 //commit
 // then push
@@ -22,7 +23,9 @@ public class Mainmenu  extends JFrame{
 	public File csv = null;
 	public JTextArea console;
 	public JComboBox choosestrat;		
-	public Mainmenu() { 
+	public myDatabase myDB;
+	public Mainmenu(myDatabase db) { 
+		myDB = db;
 		JPanel pane = new JPanel();
 		//pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
 		Container con = this.getContentPane();
@@ -45,11 +48,11 @@ public class Mainmenu  extends JFrame{
 						if(returnVal == JFileChooser.APPROVE_OPTION){
 							csv = chooser.getSelectedFile();
 							try {
-								myDatabase.insertFromFile(myDatabase.connection,myDatabase.statement,csv);
+								myDB.insertFromFile(csv);
 							} catch (Exception e) {
 								console.append("Cannot insert csv to database\n");
 							}
-							String tmp = myDatabase.getRowCount(myDatabase.connection,myDatabase.statement);
+							String tmp = myDB.getRowCount();
 							console.append(tmp);
 							console.append("CSV loaded.\n Please select a strategy.\n");
 						}
@@ -78,44 +81,33 @@ public class Mainmenu  extends JFrame{
 						
 							if (choosestrat.getSelectedIndex() == 0) { //momentum
 								//todo: move strategy related functions to strategy package
-								ResultSet rs;
-								try {
-									rs = myDatabase.statement.executeQuery("SELECT * FROM trade_list ORDER BY Entry_Time DESC limit 1000;");							
-									if(rs!=null){
-										int i = 0;
-										LinkedList<Double> trades = new LinkedList<Double>();
-										double result;
-										while (rs.next()){
-											trades.add(Double.parseDouble(rs.getString(6)));
-											i++;
-										};	
-										
-										MomentumStrategy ms = new MomentumStrategy();
-										ms.runStrategy(trades);
-										result = ms.evaluteTheStrategy();
-										/*
-										Strategy momentum = new Strategy();
-										Trade fst = new Trade(null, null, null, Double.parseDouble(a[0]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
-										Trade snd = new Trade(null, null, null, Double.parseDouble(a[1]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
-										i = 1;			
-										while (i < 19){
-											momentum.getReturn(fst, snd);
-											fst = snd;
-											i = i + 1;
-											snd = new Trade(null, null, null,Double.parseDouble(a[i]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
-										}*/
-										console.append("Average return of " + Double.toString(result) + "\n");
-										String signal = "Buy";
+								myTrade rs = myDB.getTrade("SELECT * FROM trade_list ORDER BY Entry_Time DESC limit 1000;");							
+								if(rs.getLength() > 0){
+									//int i = 0;
+									double result;
+									
+									MomentumStrategy ms = new MomentumStrategy();
+									ms.runStrategy(rs.getAllPrice());
+									result = ms.evaluteTheStrategy();
+									/*
+									Strategy momentum = new Strategy();
+									Trade fst = new Trade(null, null, null, Double.parseDouble(a[0]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
+									Trade snd = new Trade(null, null, null, Double.parseDouble(a[1]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
+									i = 1;			
+									while (i < 19){
+										momentum.getReturn(fst, snd);
+										fst = snd;
+										i = i + 1;
+										snd = new Trade(null, null, null,Double.parseDouble(a[i]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
+									}*/
+									console.append("Average return of " + Double.toString(result) + "\n");
+									String signal = "Buy";
 
-										if (result > 0.0)
-											signal = "Sell";
-										console.append("Evaluating strategy based on: "+ signal + " Signal \n");
-									} else {
-										console.append("rs null");
-									}
-								} catch (SQLException e) {
-									e.printStackTrace();
-									console.append("Error SQL lookup\n");
+									if (result > 0.0)
+										signal = "Sell";
+									console.append("Evaluating strategy based on: "+ signal + " Signal \n");
+								} else {
+									console.append("rs null");
 								}
 							}
 							//==	
@@ -140,13 +132,14 @@ public class Mainmenu  extends JFrame{
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				System.exit(0);
-				try {
-					myDatabase.connection.close();
-					myDatabase.statement.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
 
+			}
+		});
+		addWindowListener(new WindowAdapter(){
+			@Override
+			public void windowClosing(WindowEvent e){
+				myDB.closeDatabase();
+				System.exit(0);
 			}
 		});
 		//pane.add(quitButton);

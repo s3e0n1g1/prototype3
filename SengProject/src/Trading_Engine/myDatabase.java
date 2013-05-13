@@ -1,124 +1,44 @@
 package Trading_Engine;
 
-import gui.Mainmenu;
-
 import java.io.*;
 import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Scanner;
 
-import javax.swing.JFileChooser;
-
-import Selecting_Algothrim.Strategy;
-import Selecting_Algothrim.Trade;
 public class myDatabase {
-	public static Connection connection;
-	public static Statement statement;
-	public static void main(String[]args){
-		String dataSourceName = "testSqlDb";
-		String dbUrl = "jdbc:odbc:" + dataSourceName;
-		try{
-			Class.forName("org.sqlite.JDBC");
-			connection = DriverManager.getConnection("jdbc:sqlite:test.db");
-			statement = connection.createStatement();
-			deleteAllTables(connection,statement);
-			Mainmenu newApplication = new Mainmenu();
-
-		} catch(Exception e) {
-			System.out.println(e);
-		}
-
-		
-		/* try{
-			//this is what kind of driver we use
-			Class.forName("org.sqlite.JDBC");
-
-			//Connection variable or object param: dbPath, userName, password
-			Connection con = DriverManager.getConnection("jdbc:sqlite:test.db");
-
-			Statement s = con.createStatement();
-			Scanner scanner = new Scanner(System.in);
-			deleteAllTables(con,s);
-			System.out.println("###################");
-			System.out.println("Prototype 1\n Loading csv file:...");
-			insertFromFile(con,s);
-			System.out.println("Select a strategy:\n 1) Momentum Strategy\n");
-			boolean scanexit = true;
-			while (scanexit){
-				String strategy = scanner.nextLine();
-				String[] a = new String[20];
-				
-				if (strategy.equals("1")) {
-					strategy = "Momemtum";
-					scanexit = false;
-					ResultSet rs = s.executeQuery("SELECT * FROM trade_list ORDER BY Entry_Time DESC limit 20;");
-					
-					if(rs!=null){
-						int i = 0;
-						while (rs.next()){
-							a[i] = rs.getString(6);
-							//System.out.print(a[i]);
-							i++;		
-						};
-						
-						Strategy momentum = new Strategy();
-						
-						Trade fst = new Trade(null, null, null, Double.parseDouble(a[0]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
-						Trade snd = new Trade(null, null, null, Double.parseDouble(a[1]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
-						i = 1;			
-						while (i < 19){
-							momentum.getReturn(fst, snd);
-							fst = snd;
-							i = i + 1;
-							snd = new Trade(null, null, null,Double.parseDouble(a[i]), 0, 0, 0, 0, 0, 0, 0, null, 0, null, null, null);
-							
-						}
-						System.out.println ("Average return of " + Double.toString(momentum.getAverage()));
-						String signal = "Buy";
-						
-						if (momentum.getSignal() == 2)
-							signal = "Sell";
-						System.out.println("Evaluating strategy based on " +strategy+ ": "+ signal + " Signal");
-					} else {
-						System.out.println("rs null");
-					}
-					
-				} else {
-					System.out.println("Not a valid strategy, please select another");
-				}
-			}
-
-			//deleteAllTables(con,s);
-			s.close();
-			con.close();
-
-		}catch(Exception e) {
-			System.out.println("Kamalian " + e);
-		}
-		*/
-		
-	}
-
-	public static void deleteAllTables(Connection con, Statement s){
+	private static Connection connection;
+	
+	public myDatabase(){
 		try {
-			DatabaseMetaData dbm = con.getMetaData();
+			Class.forName("org.sqlite.JDBC");
+		} catch (Exception e) {
+			System.out.println("Could not find JDBCdriver : " + e);
+		}
+		try {
+			connection = DriverManager.getConnection("jdbc:sqlite:test.db");
+		} catch (Exception e) {
+			System.out.println("Could not establish connection : " + e);
+		}
+		deleteAllTables();
+	}
+	public static void deleteAllTables(){
+		try {
+			Statement statement = connection.createStatement();
+			DatabaseMetaData dbm = connection.getMetaData();
 			String[] types = {"TABLE"};
 			ResultSet allTables = dbm.getTables(null,null,"%",types);
 			if(allTables!=null){
 				while(allTables.next()){
 					String table = allTables.getString("TABLE_NAME");
-					s.addBatch("drop table " + table);
+					statement.addBatch("drop table " + table);
 					System.out.println("delete table: " + table);
 				};
-				s.executeBatch();
+				statement.executeBatch();
 			}
 			allTables.close();
+			statement.close();
 		}catch(Exception e) {
 			System.out.println("in deleteAllTables: " + e);
 		}
 	}
-
 	public static void insertQuery(PreparedStatement pstmt, String[] insertElement){
 		try {
 			int lengthOfArray = insertElement.length;
@@ -243,7 +163,6 @@ public class myDatabase {
 			System.out.println("In insertQuery:  " + e);
 		}
 	}
-
 	public static void insertDatabase (Connection con, BufferedReader br, String newHead){
 		try {
 			String st = "";
@@ -274,11 +193,16 @@ public class myDatabase {
 					insertQuery(orderBookQuery,insertElement);
 				}
 			}
-			orderBookQuery.executeBatch();
-			BidQuery.executeBatch();
-			AskQuery.executeBatch();
-			TradeQuery.executeBatch();
-
+			int[] i1 = orderBookQuery.executeBatch();
+			int[] i2 = BidQuery.executeBatch();
+			int[] i3 = AskQuery.executeBatch();
+			int[] i4 = TradeQuery.executeBatch();
+			
+			System.out.println("i1 length: " + i1.length + " " + i1[0] + " " + i1[1]);
+			System.out.println("i2 length: " + i2.length + " " + i2[0] + " " + i2[1]);
+			System.out.println("i3 length: " + i3.length + " " + i3[0] + " " + i3[1]);
+			System.out.println("i4 length: " + i4.length + " " + i4[0] + " " + i4[1]);
+			
 			orderBookQuery.close();
 			BidQuery.close();
 			AskQuery.close();
@@ -287,80 +211,79 @@ public class myDatabase {
 			System.out.println("In insertDatabase: " + e);
 		}
 	}
-
-	public static void insertFromFile(Connection con, Statement s, File f) {
+	public void insertFromFile(File f) {
 		try {
 			//JFileChooser chooser = new JFileChooser();
 			//int returnVal = chooser.showOpenDialog(null);
 			//if(returnVal == JFileChooser.APPROVE_OPTION){
-				//File f = chooser.getSelectedFile();
-				BufferedReader br = new BufferedReader(new FileReader(f));
-				String head = "";
-				if((head=br.readLine())!=null){
-					System.out.println("first character of head: " + head.charAt(0));
-					//System.out.println(head);
-					if(head.charAt(0)== '#'){
-						String[] tableElement = head.split(",");
-						tableElement[3] = "Record_Type";
-						tableElement[6] = "Undisclosed_Volume";
-						tableElement[9] = "Trans_ID";
-						tableElement[10] = "Bid_ID";
-						tableElement[11] = "Ask_ID";
-						tableElement[12] = "Bid_Ask";
-						tableElement[13] = "Entry_Time";
-						tableElement[14] = "Old_Price";
-						tableElement[15] = "Old_Volume";
-						tableElement[16] = "Buyer_Broker_ID";
-						tableElement[17] = "Seller_Broker_ID";
-						String tableQuery = tableElement[0].substring(1) + " varchar(3), " +
-								tableElement[1] + " date, " +
-								tableElement[2] + " time, " +
-								"millisecond" + " integer, "+
-								tableElement[3] + " text, " +
-								tableElement[4] + " float, " +
-								tableElement[5] + " integer, " +
-								tableElement[6] + " integer, " +
-								tableElement[7] + " float, " +
-								tableElement[8] + " text, " +
-								tableElement[9] + " integer, " +
-								tableElement[10] + " bigint, " +
-								tableElement[11] + " bigint, " +
-								tableElement[12] + " varchar(1), " +
-								tableElement[13] + " time, " +
-								tableElement[14] + " float, " +
-								tableElement[15] + " integer, " +
-								tableElement[16] + " integer, " +
-								tableElement[17] + " integer ";
-						String newHead = tableElement[0].substring(1);
-						for(int i = 1; i < tableElement.length; i++){
-							newHead += " , " + tableElement[i];
-							if(i == 2){
-								newHead += " , " + "millisecond";
-							}
+			//File f = chooser.getSelectedFile();
+			Statement s = connection.createStatement();
+			BufferedReader br = new BufferedReader(new FileReader(f));
+			String head = "";
+			if((head=br.readLine())!=null){
+				System.out.println("first character of head: " + head.charAt(0));
+				//System.out.println(head);
+				if(head.charAt(0)== '#'){
+					String[] tableElement = head.split(",");
+					tableElement[3] = "Record_Type";
+					tableElement[6] = "Undisclosed_Volume";
+					tableElement[9] = "Trans_ID";
+					tableElement[10] = "Bid_ID";
+					tableElement[11] = "Ask_ID";
+					tableElement[12] = "Bid_Ask";
+					tableElement[13] = "Entry_Time";
+					tableElement[14] = "Old_Price";
+					tableElement[15] = "Old_Volume";
+					tableElement[16] = "Buyer_Broker_ID";
+					tableElement[17] = "Seller_Broker_ID";
+					String tableQuery = tableElement[0].substring(1) + " varchar(3), " +
+							tableElement[1] + " date, " +
+							tableElement[2] + " time, " +
+							"millisecond" + " integer, "+
+							tableElement[3] + " text, " +
+							tableElement[4] + " float, " +
+							tableElement[5] + " integer, " +
+							tableElement[6] + " integer, " +
+							tableElement[7] + " float, " +
+							tableElement[8] + " text, " +
+							tableElement[9] + " integer, " +
+							tableElement[10] + " bigint, " +
+							tableElement[11] + " bigint, " +
+							tableElement[12] + " varchar(1), " +
+							tableElement[13] + " time, " +
+							tableElement[14] + " float, " +
+							tableElement[15] + " integer, " +
+							tableElement[16] + " integer, " +
+							tableElement[17] + " integer ";
+					String newHead = tableElement[0].substring(1);
+					for(int i = 1; i < tableElement.length; i++){
+						newHead += " , " + tableElement[i];
+						if(i == 2){
+							newHead += " , " + "millisecond";
 						}
-						System.out.println(tableQuery);
-						s.execute("create table orderbook(" + tableQuery + ")");
-						s.execute("create table bid_list(" + tableQuery + ")");
-						s.execute("create table ask_list(" + tableQuery + ")");
-						s.execute("create table trade_list(" + tableQuery + ")");
-						insertDatabase(con,br,newHead);
-					} else {
-						System.out.println("Error: file content not csv format");
 					}
-				}else {
-					System.out.println("Error: file is empty");
+					System.out.println(tableQuery);
+					s.execute("create table orderbook(" + tableQuery + ")");
+					s.execute("create table bid_list(" + tableQuery + ")");
+					s.execute("create table ask_list(" + tableQuery + ")");
+					s.execute("create table trade_list(" + tableQuery + ")");
+					insertDatabase(connection,br,newHead);
+				} else {
+					System.out.println("Error: file content not csv format");
 				}
-				br.close();
-			//}
+			}else {
+				System.out.println("Error: file is empty");
+			}
+			br.close();
+			s.close();
 		}catch (Exception e) {
 			System.out.println("In insertFromFile:  " + e);
 		}
 	}
-
-	public static String getRowCount(Connection connection,
-			Statement statement) {
+	public static String getRowCount1(Connection connection) {
 		String reply = null;
 		try{
+			Statement statement = connection.createStatement();
 			ResultSet rs = statement.executeQuery("SELECT count(*) FROM orderbook;");
 			if(rs!=null){
 				if(rs.next()){
@@ -386,9 +309,75 @@ public class myDatabase {
 				}
 			}
 			rs.close();
+			statement.close();
 		}catch(Exception e){
 			System.out.println("In getRowCount:  " + e);
 		}
 		return reply;
+	}
+	public String getRowCount() {
+		String reply = null;
+		try{
+			Statement statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery("SELECT count(*) FROM orderbook;");
+			if(rs!=null){
+				if(rs.next()){
+					reply ="orderbook contains " + rs.getString(1) + " lines.\n";
+				}
+			}
+			rs = statement.executeQuery("SELECT count(*) FROM bid_list;");
+			if(rs!=null){
+				if(rs.next()){
+					reply = reply + "bid_list contains " + rs.getString(1) + " lines.\n";
+				}
+			}
+			rs = statement.executeQuery("SELECT count(*) FROM ask_list;");
+			if(rs!=null){
+				if(rs.next()){
+					reply = reply + "ask_list contains " + rs.getString(1) + " lines.\n";
+				}
+			}
+			rs = statement.executeQuery("SELECT count(*) FROM trade_list;");
+			if(rs!=null){
+				if(rs.next()){
+					reply = reply + "trade_list contains " + rs.getString(1) + " lines.\n";
+				}
+			}
+			rs.close();
+			statement.close();
+		}catch(Exception e){
+			System.out.println("In getRowCount:  " + e);
+		}
+		return reply;
+	}
+
+
+	public myTrade getTrade(String query) {
+		ResultSet rs = null;
+		myTrade trade = new myTrade();
+		System.out.println("trade length: " + trade.getLength());
+		try{
+			Statement statement = connection.createStatement();
+			rs = statement.executeQuery(query);
+			Double tmp;
+			while (rs.next()){
+				tmp = rs.getDouble(6);
+				System.out.println("tmp: " + tmp);
+				trade.addPice(tmp);
+			};
+			rs.close();
+			statement.close();
+		}catch(Exception e){
+			System.out.println("In getTrade:  " + e);
+		}
+		return trade;
+	}
+	public void closeDatabase(){
+		deleteAllTables();
+		try {
+			connection.close();
+		} catch (Exception e) {
+			System.out.println("Error closing database : " + e);
+		}
 	}
 }

@@ -19,7 +19,8 @@ public class myDatabase {
 		}
 		deleteAllTables();
 	}
-	public static void insertAllDatabase (Connection con, BufferedReader br, String newHead){
+	public static String insertAllDatabase (Connection con, BufferedReader br, String newHead){
+		String reply = "";
 		try {
 			String st = "";
 			String preInsertQuery = "insert into all_list(" + newHead + ")values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -54,7 +55,12 @@ public class myDatabase {
 			}
 			int[] i1 = orderBookQuery.executeBatch();
 
-			
+			reply = "total length of CSV file is " + i1.length + " lines. \n" 
+					+ "ENTER consist of " + enter + " lines which ask has " 
+					+ ask + " lines and bid has " + bid + " lines \n"
+					+ "AMEND consist of " + amend + " lines. \n"
+					+ "DELETE consist of " + delete + " lines. \n"
+					+ "TRADE consist of " + trade + " lines. \n";
 			System.out.println("i1 length: " + i1.length + " == " + (enter + amend + delete + trade + other));
 			System.out.println("enter: " + enter + " ask: " + ask + " bid " + bid);
 			System.out.println("amend: " + amend);
@@ -65,8 +71,10 @@ public class myDatabase {
 		}catch(Exception e){
 			System.out.println("In insertAllDatabase: " + e);
 		}
+		return reply;
 	}
-	public void insertAll(File f) {
+	public String insertAll(File f) {
+		String reply = "";
 		try {
 			Statement s = connection.createStatement();
 			BufferedReader br = new BufferedReader(new FileReader(f));
@@ -114,7 +122,7 @@ public class myDatabase {
 					}
 					System.out.println(tableQuery);
 					s.execute("create table all_list(" + tableQuery + ")");
-					insertAllDatabase(connection,br,newHead);
+					reply = insertAllDatabase(connection,br,newHead);
 				} else {
 					System.out.println("Error: file content not csv format");
 				}
@@ -126,7 +134,7 @@ public class myDatabase {
 		}catch (Exception e) {
 			System.out.println("In insertAll:  " + e);
 		}
-		
+		return reply;
 	}
 	public static void deleteAllTables(){
 		try {

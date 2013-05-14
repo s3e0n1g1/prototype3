@@ -38,7 +38,7 @@ public class Mainmenu  extends JFrame{
 		Container con = this.getContentPane();
 		con.add(pane); 
 		setTitle("Prototype ATS"); 
-		setSize(1000,800);
+		setSize(1100,800);
 		setLocationRelativeTo( null );
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
@@ -55,7 +55,7 @@ public class Mainmenu  extends JFrame{
 						if(returnVal == JFileChooser.APPROVE_OPTION){
 							csv = chooser.getSelectedFile();
 							try {
-								myDB.insertAll(csv);
+								console.append(myDB.insertAll(csv));
 							} catch (Exception e) {
 								console.append("Cannot insert csv to database\n");
 							}
@@ -97,9 +97,15 @@ public class Mainmenu  extends JFrame{
 										String tmpType;
 										double tmpPrice;
 										int tmpVol;
-										long tmpID;
+										long tmpID = 0;
+										int buySig = 0;
+										int sellSig = 0;
+										double profit = 0;
+										int tmpCount1 = 0;
+										int tmpCount2 = 0;
 										newMomentum moment = new newMomentum();
 										signalObject tempSignal;
+										signalObject lastBuySig = null;
 										orderObject lastSale = new orderObject( -1, -1);
 										orderObject lastBuy = new orderObject( -1, -1);
 										myDB.initTwoList();
@@ -115,10 +121,6 @@ public class Mainmenu  extends JFrame{
 													tmpID = set.getLong(12);
 													lastBuy = new orderObject(tmpVol,tmpPrice);
 													myDB.insertBidList(tmpID,tmpPrice,tmpVol);
-													buytable.setValueAt("1", 1, 0);
-													buytable.setValueAt(tmpID, 1, 1);
-													buytable.setValueAt(tmpPrice, 1, 2);
-													buytable.setValueAt(tmpVol, 1, 3);
 												}else if(tmpType.equalsIgnoreCase("A")){
 													tmpID = set.getLong(13);
 													lastSale = new orderObject(tmpVol,tmpPrice);
@@ -129,9 +131,33 @@ public class Mainmenu  extends JFrame{
 													selltable.setValueAt(tmpVol, 1, 3);
 												}
 												if(tempSignal.getType().equalsIgnoreCase("buy")){
-													System.out.println("buy generated - count " + count);
+													buySig++;
+													moment.getreceiptNumber(buySig);
+													lastBuySig = tempSignal;
+													if(tmpCount1 == 10){
+														tmpCount1 = 0;
+													}
+													buytable.setValueAt(tmpCount1, tmpCount1, 0);
+													buytable.setValueAt(tmpID, tmpCount1, 1);
+													buytable.setValueAt(tmpPrice, tmpCount1, 2);
+													buytable.setValueAt(tmpVol, tmpCount1, 3);
+													tmpCount1++;
+													tmpCount1++;
+													//System.out.println("buy generated - count " + count);
 												}else if(tempSignal.getType().equalsIgnoreCase("sell")){
-													System.out.println("sell generated - count " + count);
+													moment.getreceiptNumber(sellSig);
+													profit += (tempSignal.getPrice() - lastBuySig.getPrice());
+													sellSig++;
+													if(tmpCount2 == 10){
+														tmpCount2 = 0;
+													}
+													selltable.setValueAt(tmpCount2, tmpCount2, 0);
+													selltable.setValueAt(tmpID, tmpCount2, 1);
+													selltable.setValueAt(tmpPrice, tmpCount2, 2);
+													selltable.setValueAt(tmpVol, tmpCount2, 3);
+													tmpCount2++;
+													//System.out.println("sell generated - count " + count);
+													
 												}
 												
 												
@@ -139,6 +165,10 @@ public class Mainmenu  extends JFrame{
 											count++;
 										};
 										System.out.println("count : " + count);
+										console.append("Total lines read : " + count + "\n");
+										console.append("Strategy generate " + buySig + " buy signals.\n");
+										console.append("Strategy generate " + sellSig + " sell signals.\n");
+										console.append("Profit gain: " + profit + "\n");
 										myDB.printTwoList();
 										myDB.closeTwoList();
 									}else{
@@ -214,22 +244,25 @@ public class Mainmenu  extends JFrame{
 			e.printStackTrace();
 		}
 		String timestamp = new SimpleDateFormat("H:mm").format(date); // 9:00
-		String [] tableColumnNames = {"Order Type", "Bid Price", "Bid Volume", "Timestamp", "Status"};
 		Object[][] fakedata = {
-				{"Buy", new Long(12), new Double(200), new Integer(0), "" },
-				{"Buy", new Long(10), new Double(20), new Integer(0),"" },
-				{"Buy", new Long(9), new Double(150), new Integer(0),"Matched" },
-				{"Sell", new Long(12), new Double(200),new Integer(0),"" },
-				{"Buy", new Long(10), new Double(20), new Integer(0),"" },
-				{"Sell", new Long(9), new Double(150), new Integer(0),"Matched" }
+				{"", new Long(0), new Double(0), new Integer(0) },
+				{"", new Long(0), new Double(0), new Integer(0) },
+				{"", new Long(0), new Double(0), new Integer(0) },
+				{"", new Long(0), new Double(0),new Integer(0)  },
+				{"", new Long(0), new Double(0), new Integer(0) },
+				{"", new Long(0), new Double(0), new Integer(0) },
+				{"", new Long(0), new Double(0), new Integer(0) },
+				{"", new Long(0), new Double(0), new Integer(0) },
+				{"", new Long(0), new Double(0), new Integer(0) },
+				{"", new Long(0), new Double(0), new Integer(0) }
 		};
 		JTable buybook = new JTable();
 		buybook.setModel(buytable);
 		buytable.setData(fakedata);
 		JScrollPane scrollTable = new JScrollPane(buybook);
 		buybook.setFillsViewportHeight(true);
-		scrollTable.setPreferredSize(new Dimension(450,120));
-		scrollTable.setMaximumSize(new Dimension(450,150));		
+		scrollTable.setPreferredSize(new Dimension(500,120));
+		scrollTable.setMaximumSize(new Dimension(500,150));		
 		pane.add(scrollTable);
 
 		JTable sellbook = new JTable();
@@ -237,8 +270,8 @@ public class Mainmenu  extends JFrame{
 		selltable.setData(fakedata);
 		JScrollPane sellTable = new JScrollPane(sellbook);
 		buybook.setFillsViewportHeight(true);
-		sellTable.setPreferredSize(new Dimension(450,120));
-		sellTable.setMaximumSize(new Dimension(450,150));		
+		sellTable.setPreferredSize(new Dimension(500,120));
+		sellTable.setMaximumSize(new Dimension(500,150));		
 
 
 		JPanel buypanel = new JPanel();

@@ -10,10 +10,12 @@ public class newMomentum {
 		mode = BUY_MODE;
 		average = 0;
 		shareQuantity = 0;
+		lastAverage = 0;
 	}
 	
 	public void addTrade( double trade){
 		//once Counting reach 9 , wihch is SIZE_OF_ARRAY, we know arrayIsFull
+		lastAverage = average;
 		if (( arrayIsFull == false) && counting == SIZE_OF_ARRAY) { // just to check if should it take average or not
 			arrayIsFull = true;
 		}
@@ -38,17 +40,15 @@ public class newMomentum {
 		
 		signalObject result = new signalObject( -1, -1, "nothing");
 		if ( mode == BUY_MODE && arrayIsFull ){ // we want to buy !
-			if (average >epsilon){
+			if ((average - lastAverage) >epsilon){
 				result = new signalObject( lastSale.getQauntity(), Math.max(lastSale.getPrice(), lastBuy.getPrice()) + 0.001, "buy"); // to be sure ours is happening
 				mode = SELL_MODE;
-				arrayIsFull = false;
 			}
 		}
 		else if ( mode == SELL_MODE && arrayIsFull){
-			if ( average <  (- epsilon)){ // we want to sell
+			if ( (average - lastAverage) <  (- epsilon)){ // we want to sell
 				result = new signalObject( lastBuy.getQauntity(), Math.min(lastSale.getPrice(), lastBuy.getPrice()) - 0.001, "sell");
 				mode = BUY_MODE;
-				arrayIsFull = false;
 			}
 		}
 		return result;
@@ -137,6 +137,7 @@ public class newMomentum {
 	private boolean arrayIsFull;
 	private static final int SELL_MODE = 1;
 	private static final int BUY_MODE = -1;
-	private static final double epsilon = 0.003;
+	private static final double epsilon = 0.0001;
+	private double lastAverage;
 	
 }

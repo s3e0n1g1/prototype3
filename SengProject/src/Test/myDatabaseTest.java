@@ -1,4 +1,4 @@
-package Trading_Engine;
+package Test;
 
 import static org.junit.Assert.*;
 
@@ -17,6 +17,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import Trading_Engine.myDatabase;
 
 public class myDatabaseTest {
 	private static myDatabase myTestDB;

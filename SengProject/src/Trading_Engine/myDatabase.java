@@ -136,7 +136,7 @@ public class myDatabase {
 		}
 		return reply;
 	}
-	public static void deleteAllTables(){
+	public void deleteAllTables(){
 		try {
 			Statement statement = connection.createStatement();
 			DatabaseMetaData dbm = connection.getMetaData();
@@ -490,8 +490,8 @@ public class myDatabase {
 		return trade;
 	}
 	public void closeDatabase(){
-		deleteAllTables();
 		try {
+			deleteAllTables();
 			connection.close();
 		} catch (Exception e) {
 			System.out.println("Error closing database : " + e);

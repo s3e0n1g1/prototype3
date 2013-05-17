@@ -9,8 +9,15 @@ import gui.Mainmenu;
 public class Main {
 	public static void main(String[]args){
 		Result result = JUnitCore.runClasses(AllTestSuite.class);
-		for(Failure failure : result.getFailures()){
-			System.out.println(failure.toString());
+		System.out.println("total Junit test run count: " + result.getRunCount());
+		if(result.wasSuccessful()){
+			System.out.println("All tests are passed!!!");
+		}else{
+			System.out.println("Tests Failed!!!");
+			System.out.println("Failure count: " + result.getFailureCount());
+			for(Failure failure : result.getFailures()){
+				System.out.println(failure.toString());
+			}
 		}
 		
 		myDatabase db = new myDatabase();

@@ -3,7 +3,10 @@ import java.util.LinkedList;
 import java.lang.Math;
 
 public class reverseMomentum {
-
+	public double getAverage () {
+		return average;
+	}
+	
 	public reverseMomentum ( ){
 		counting = 0;
 		arrayIsFull = false;

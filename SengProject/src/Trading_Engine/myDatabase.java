@@ -19,13 +19,14 @@ public class myDatabase {
 		}
 		deleteAllTables();
 	}
-	public static String insertAllDatabase (Connection con, BufferedReader br, String newHead){
+	public static String insertAllDatabase (Connection con, BufferedReader br, String newHead, String dbName){
 		String reply = "";
 		try {
 			String st = "";
-			String preInsertQuery = "insert into all_list(" + newHead + ")values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			String preInsertQuery = "insert into " + dbName +"(" + newHead + ")values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			PreparedStatement orderBookQuery = con.prepareStatement(preInsertQuery);
 			con.setAutoCommit(false);
+			int count = 0;
 			int enter = 0;
 			int ask = 0;
 			int bid =0;
@@ -51,17 +52,22 @@ public class myDatabase {
 				}else{
 					other++;
 				}
+				count++;
 				insertQuery(orderBookQuery,insertElement);
+				if(count%1000 == 0){
+					orderBookQuery.executeBatch();
+				}
 			}
-			int[] i1 = orderBookQuery.executeBatch();
+			orderBookQuery.executeBatch();
 
-			reply = "total length of CSV file is " + i1.length + " lines. \n" 
+			reply = "total length of CSV file is " + count + " lines. \n" 
 					+ "ENTER consist of " + enter + " lines which ask has " 
 					+ ask + " lines and bid has " + bid + " lines \n"
 					+ "AMEND consist of " + amend + " lines. \n"
 					+ "DELETE consist of " + delete + " lines. \n"
 					+ "TRADE consist of " + trade + " lines. \n";
-			System.out.println("i1 length: " + i1.length + " == " + (enter + amend + delete + trade + other));
+			System.out.println("Result of table " + dbName + " :");
+			System.out.println("i1 length: " + count + " == " + (enter + amend + delete + trade + other));
 			System.out.println("enter: " + enter + " ask: " + ask + " bid " + bid);
 			System.out.println("amend: " + amend);
 			System.out.println("delete: " + delete);
@@ -73,14 +79,14 @@ public class myDatabase {
 		}
 		return reply;
 	}
-	public String insertAll(File f) {
+	public String insertAll(File f, String dbName) {
 		String reply = "";
 		try {
 			Statement s = connection.createStatement();
 			BufferedReader br = new BufferedReader(new FileReader(f));
 			String head = "";
 			if((head=br.readLine())!=null){
-				System.out.println("first character of head: " + head.charAt(0));
+				//System.out.println("first character of head: " + head.charAt(0));
 				if(head.charAt(0)== '#'){
 					String[] tableElement = head.split(",");
 					tableElement[3] = "Record_Type";
@@ -120,9 +126,9 @@ public class myDatabase {
 							newHead += " , " + "millisecond";
 						}
 					}
-					System.out.println(tableQuery);
-					s.execute("create table all_list(" + tableQuery + ")");
-					reply = insertAllDatabase(connection,br,newHead);
+					//System.out.println(tableQuery);
+					s.execute("create table " + dbName + "(" + tableQuery + ")");
+					reply = insertAllDatabase(connection,br,newHead,dbName);
 				} else {
 					System.out.println("Error: file content not csv format");
 				}

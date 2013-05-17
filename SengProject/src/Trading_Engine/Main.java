@@ -11,6 +11,7 @@ import gui.Mainmenu;
 public class Main {
 	public static void main(String[]args){
 		Result result = JUnitCore.runClasses(AllTestSuite.class);
+		System.out.println("Finish running All the tests!!!");
 		System.out.println("total Junit test run count: " + result.getRunCount());
 		if(result.wasSuccessful()){
 			System.out.println("All tests are passed!!!");
@@ -23,6 +24,6 @@ public class Main {
 		}
 		
 		myDatabase db = new myDatabase();
-		new Mainmenu(db);
+		new Mainmenu(db,result);
 	}
 }

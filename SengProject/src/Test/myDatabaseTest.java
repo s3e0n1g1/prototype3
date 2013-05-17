@@ -33,7 +33,7 @@ public class myDatabaseTest {
 	public void testInsertSmallData() {
 		URL url = getClass().getResource("smalldata.csv");
 		File file = new File(url.getPath());
-		myTestDB.insertAll(file);
+		myTestDB.insertAll(file,"all_list");
 		try {
 			ResultSet result = myTestDB.getResultSet("SELECT count(*) FROM all_list;");
 			Assert.assertEquals("Error in select count(*)!", 2059, result.getInt(1));
@@ -64,9 +64,15 @@ public class myDatabaseTest {
 		}catch (Exception e){
 			System.out.println("Error in br.readline() : " + e);
 		}
-
 	}
-
+	
+	@Test(timeout=900)
+	public void testLargeData(){
+		//myTestDB.deleteAllTables();
+		URL url = getClass().getResource("smalldata.csv");
+		File file = new File(url.getPath());
+		myTestDB.insertAll(file,"test_list");
+	}
 
 	@AfterClass
 	public static void close(){

@@ -12,6 +12,8 @@ import javax.swing.*;
 
 import javax.swing.text.DefaultCaret;
 
+import org.junit.runner.Result;
+
 
 import Selecting_Algothrim.newMomentum;
 import Selecting_Algothrim.orderObject;
@@ -25,7 +27,7 @@ public class Mainmenu  extends JFrame{
 	public myDatabase myDB;
 	private OrderbookTable buytable;
 	private OrderbookTable selltable;
-	public Mainmenu(myDatabase db) { 
+	public Mainmenu(myDatabase db, Result result) { 
 		myDB = db;
 		buytable = new OrderbookTable();
 		selltable = new OrderbookTable();
@@ -50,7 +52,7 @@ public class Mainmenu  extends JFrame{
 						if(returnVal == JFileChooser.APPROVE_OPTION){
 							csv = chooser.getSelectedFile();
 							try {
-								console.append(myDB.insertAll(csv));
+								console.append(myDB.insertAll(csv,"all_list"));
 							} catch (Exception e) {
 								console.append("Cannot insert csv to database\n");
 							}
@@ -199,10 +201,17 @@ public class Mainmenu  extends JFrame{
 				});
 
 		pane.add(menu);
-		console = new JTextArea("Prototype 2 Loaded. Please load a CSV file.\n");
+		console = new JTextArea("");
 		console.setBorder(BorderFactory.createLineBorder(Color.black));
 		console.setEditable(false);
 		console.setMargin(new Insets(10,10,10,10));
+		if(result.wasSuccessful()){
+			console.append("All system checks passed.\n");
+			console.append("Prototype 2 Loaded. Please load a CSV file.\n");
+		}else{
+			console.append("System checks not passed.\n");
+			console.append("Please close this software and contact the developer regarding this issue.\n");
+		}
 		JScrollPane consoletext = new JScrollPane(console); 
 		consoletext.setPreferredSize(new Dimension(600, 450));
 		consoletext.setMaximumSize((new Dimension(600, 450)));

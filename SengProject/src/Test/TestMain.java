@@ -98,13 +98,30 @@ public class TestMain {
 	}
 	
 	//GUI TESTS
-	
-	public void main(){
+	@Test
+	public void testOrderBook(){
 		OrderbookTable testTableModel = new OrderbookTable();
 		JTable testTable = new JTable();
 		testTable.setModel(testTableModel);
-		
-		
+		Object[][] testData = {
+				{"abc", new Long(12), new Double(34), new Integer(56) },
+		};
+		testTableModel.setData(testData);
+		assertEquals("Column Count is 4", 4, testTableModel.getColumnCount());
+		assertEquals("Testing getValueAt", "abc", testTableModel.getValueAt(0,0));
+		testTableModel.setValueAt("def", 0, 0);
+		assertEquals("Testing setValueAt for changed value in column 1", "def", testTableModel.getValueAt(0,0));
+		assertEquals("Testing getValueAt ", 56, testTableModel.getValueAt(0,3));
+		testTableModel.setValueAt(100, 0, 3);
+		assertEquals("Testing getValueAt for changed value in column 4", 100, testTableModel.getValueAt(0,3));
+		assertEquals("Testing for Row count", 1, testTableModel.getRowCount());
+		Object[][]testData2 = {
+				{"abc", new Long(12), new Double(34), new Integer(56) },
+				{"abc", new Long(12), new Double(34), new Integer(56) },
+				{"def", new Long(11), new Double(87), new Integer(41) }
+		};
+		testTableModel.setData(testData2);
+		assertEquals("Testing for increased Row count", 3, testTableModel.getRowCount());		
 		
 	}
 	

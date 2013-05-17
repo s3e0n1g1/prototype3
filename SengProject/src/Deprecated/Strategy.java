@@ -1,4 +1,5 @@
-package Selecting_Algothrim;
+package Deprecated;
+
 
 /**
  * Contains strategy functions.

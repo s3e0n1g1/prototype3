@@ -7,21 +7,16 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.LinkedList;
 
 import javax.swing.*; 
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
+
 import javax.swing.text.DefaultCaret;
 
-import Selecting_Algothrim.MomentumStrategy;
-import Selecting_Algothrim.Strategy;
-import Selecting_Algothrim.Trade;
+
 import Selecting_Algothrim.newMomentum;
 import Selecting_Algothrim.orderObject;
 import Selecting_Algothrim.signalObject;
 import Trading_Engine.myDatabase;
-import Trading_Engine.myTrade;
 
 public class Mainmenu  extends JFrame{
 	public File csv = null;

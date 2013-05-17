@@ -1,4 +1,4 @@
-package Selecting_Algothrim;
+package Deprecated;
 
 import java.sql.Date;
 

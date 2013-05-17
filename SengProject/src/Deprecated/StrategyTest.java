@@ -1,6 +1,7 @@
-package Selecting_Algothrim;
+package Deprecated;
 
 import org.junit.Test;
+
 
 
 public class StrategyTest {

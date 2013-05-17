@@ -1,5 +1,6 @@
-package Selecting_Algothrim;
+package Deprecated;
 import java.util.LinkedList;
+
 public class GSTester {
 
 	/**

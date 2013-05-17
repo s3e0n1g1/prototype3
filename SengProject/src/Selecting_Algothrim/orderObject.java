@@ -7,8 +7,6 @@ public class orderObject {
 		price = aPrice;
 	}
 	
-	
-
 	public int getQauntity(){
 		return qauntity;
 	}

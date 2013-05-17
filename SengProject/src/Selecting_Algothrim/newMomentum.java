@@ -13,6 +13,10 @@ public class newMomentum {
 		lastAverage = 0;
 	}
 	
+	public double getAverage () {
+		return average;
+	}
+	
 	public void addTrade( double trade){
 		//once Counting reach 9 , wihch is SIZE_OF_ARRAY, we know arrayIsFull
 		lastAverage = average;
@@ -36,19 +40,17 @@ public class newMomentum {
 	}
 	
 	public signalObject generateOrderSignal ( orderObject lastSale, orderObject lastBuy){
-		
-		
 		signalObject result = new signalObject( -1, -1, "nothing");
 		if ( mode == BUY_MODE && arrayIsFull ){ // we want to buy !
 			if ((average - lastAverage) >epsilon){
 				result = new signalObject( lastSale.getQauntity(), Math.max(lastSale.getPrice(), lastBuy.getPrice()) + 0.001, "buy"); // to be sure ours is happening
-				mode = SELL_MODE;
+				mode = SELL_MODE;		
 			}
 		}
 		else if ( mode == SELL_MODE && arrayIsFull){
 			if ( (average - lastAverage) <  (- epsilon)){ // we want to sell
 				result = new signalObject( lastBuy.getQauntity(), Math.min(lastSale.getPrice(), lastBuy.getPrice()) - 0.001, "sell");
-				mode = BUY_MODE;
+				mode = BUY_MODE;		
 			}
 		}
 		return result;
@@ -122,7 +124,8 @@ public class newMomentum {
 		return sellReceipt;
 	}
 	public LinkedList<Integer> getBuyReceipt(){
-		return sellReceipt;
+		//return sellReceipt;
+		return buyReceipt;
 	}
 	
 	private int shareQuantity;

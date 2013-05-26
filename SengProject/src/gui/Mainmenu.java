@@ -12,6 +12,7 @@ import javax.swing.*;
 
 import javax.swing.text.DefaultCaret;
 
+import org.jfree.ui.RefineryUtilities;
 import org.junit.runner.Result;
 
 
@@ -31,9 +32,13 @@ public class Mainmenu  extends JFrame{
 		myDB = db;
 		buytable = new OrderbookTable();
 		selltable = new OrderbookTable();
-		JPanel pane = new JPanel();
+		JTabbedPane jtb = new JTabbedPane();
+		
 		Container con = this.getContentPane();
-		con.add(pane); 
+		//con.add(pane); 
+		con.add(jtb);
+		JPanel pane = new JPanel();
+		jtb.addTab("Orderbook View", pane);
 		setTitle("Prototype ATS"); 
 		setSize(1100,800);
 		setLocationRelativeTo( null );
@@ -247,37 +252,37 @@ public class Mainmenu  extends JFrame{
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		String timestamp = new SimpleDateFormat("H:mm").format(date); // 9:00
-		Object[][] fakedata = {
-				{"", new Long(0), new Double(0), new Integer(0) },
-				{"", new Long(0), new Double(0), new Integer(0) },
-				{"", new Long(0), new Double(0), new Integer(0) },
-				{"", new Long(0), new Double(0),new Integer(0)  },
-				{"", new Long(0), new Double(0), new Integer(0) },
-				{"", new Long(0), new Double(0), new Integer(0) },
-				{"", new Long(0), new Double(0), new Integer(0) },
-				{"", new Long(0), new Double(0), new Integer(0) },
-				{"", new Long(0), new Double(0), new Integer(0) },
-				{"", new Long(0), new Double(0), new Integer(0) }
-		};
+		String timestamp = new SimpleDateFormat("HH:mm").format(date); // 9:00
+
 		JTable buybook = new JTable();
 		buybook.setModel(buytable);
-		buytable.setData(fakedata);
+		//buytable.setData(fakedata);
 		JScrollPane scrollTable = new JScrollPane(buybook);
 		buybook.setFillsViewportHeight(true);
 		scrollTable.setPreferredSize(new Dimension(500,120));
 		scrollTable.setMaximumSize(new Dimension(500,150));		
 		pane.add(scrollTable);
+		Object [] fakedata1 = {100, "24:00",new Long(0), new Double(0), new Integer(0)};
+		buytable.addElement(fakedata1);
+		buytable.addElement(fakedata1);
+		buytable.addElement(fakedata1);
+		buytable.addElement(fakedata1);
 
 		JTable sellbook = new JTable();
 		sellbook.setModel(selltable);
-		selltable.setData(fakedata);
+		//selltable.setData(fakedata);
 		JScrollPane sellTable = new JScrollPane(sellbook);
 		buybook.setFillsViewportHeight(true);
 		sellTable.setPreferredSize(new Dimension(500,120));
 		sellTable.setMaximumSize(new Dimension(500,150));		
-
-
+		
+		selltable.addElement(fakedata1);
+		selltable.addElement(fakedata1);
+		selltable.addElement(fakedata1);
+		selltable.addElement(fakedata1);
+		console.append("To add element to table do\n");
+		console.append("selltable.addElement(data value as Object[] array)\n");
+		
 		JPanel buypanel = new JPanel();
 		buypanel.setLayout(new BoxLayout(buypanel, BoxLayout.PAGE_AXIS));
 		buypanel.add(new JLabel ("Buy"));
@@ -291,7 +296,49 @@ public class Mainmenu  extends JFrame{
 		pane.add(buypanel);
 		pane.add(sellpanel);
 
-		setVisible(true);		
+		//graphs panel
+
+		setVisible(true);
+	
+        LineGraph returntimegraph = new LineGraph("Today's Trades");
+        returntimegraph.pack();
+        returntimegraph.setLocationRelativeTo(null);
+        returntimegraph.setVisible(true);
+		
+        /*
+        JMenuBar menubar = new JMenuBar();
+        JMenu file = new JMenu("File");
+        menubar.add(file);
+        JMenuItem quit = new JMenuItem("Quit");
+        file.add(quit);
+        setJMenuBar(menubar);
+        
+       */
+        
+        JMenuBar menubar = new JMenuBar();
+        ImageIcon icon = new ImageIcon(getClass().getResource("exit.png"));
+
+        JMenu file = new JMenu("File");
+        file.setMnemonic(KeyEvent.VK_F);
+
+        JMenuItem eMenuItem = new JMenuItem("Exit", icon);
+        eMenuItem.setMnemonic(KeyEvent.VK_C);
+        eMenuItem.setToolTipText("Exit application");
+        eMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                System.exit(0);
+            }
+
+        });
+
+        file.add(eMenuItem);
+
+        menubar.add(file);
+
+        setJMenuBar(menubar);
+        
 	}
 
+    
+	
 }

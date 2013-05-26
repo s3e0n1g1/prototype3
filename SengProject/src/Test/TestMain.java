@@ -140,7 +140,7 @@ public class TestMain {
 		Object[][] testData = {
 				{"abc", new Long(12), new Double(34), new Integer(56) },
 		};
-		testTableModel.setData(testData);
+		//testTableModel.setData(testData);
 		assertEquals("Column Count is 4", 4, testTableModel.getColumnCount());
 		assertEquals("Testing getValueAt", "abc", testTableModel.getValueAt(0,0));
 		testTableModel.setValueAt("def", 0, 0);
@@ -154,7 +154,7 @@ public class TestMain {
 				{"abc", new Long(12), new Double(34), new Integer(56) },
 				{"def", new Long(11), new Double(87), new Integer(41) }
 		};
-		testTableModel.setData(testData2);
+		//testTableModel.setData(testData2);
 		assertEquals("Testing for increased Row count", 3, testTableModel.getRowCount());		
 		
 	}

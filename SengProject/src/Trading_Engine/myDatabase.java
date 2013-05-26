@@ -80,6 +80,7 @@ public class myDatabase {
 		return reply;
 	}
 	public String insertAll(File f, String dbName) {
+		deleteAllTables();
 		String reply = "";
 		try {
 			Statement s = connection.createStatement();

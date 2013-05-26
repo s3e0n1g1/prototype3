@@ -67,7 +67,7 @@ public class myDatabaseTest {
 	}
 	
 	@Test(timeout=900)
-	public void testLargeData(){
+	public void testInsertLargeData(){
 		//myTestDB.deleteAllTables();
 		URL url = getClass().getResource("smalldata.csv");
 		File file = new File(url.getPath());

@@ -59,7 +59,7 @@ public class myDatabase {
 				}
 			}
 			orderBookQuery.executeBatch();
-
+			con.commit();
 			reply = "total length of CSV file is " + count + " lines. \n" 
 					+ "ENTER consist of " + enter + " lines which ask has " 
 					+ ask + " lines and bid has " + bid + " lines \n"
@@ -515,7 +515,7 @@ public class myDatabase {
 		return set;
 	}
 	public void initTwoList() {
-		String tableQuery = "ID" + " bigint, " + "Price" + " float, " + "Volume" + "integer ";
+		String tableQuery = "ID" + " bigint, " + "Price" + " float, " + "Volume" + " integer ";
 		
 		try{
 			Statement s = connection.createStatement();
@@ -562,6 +562,45 @@ public class myDatabase {
 			askListQuery.close();
 		}catch (Exception e){
 			System.out.println("In insertAskList:  " + e);
+		}
+	}
+	public void updateBidList(long tmpID, double tmpPrice, int tmpVol) {
+		String preUpdateQuery = "update ask_list set Price = ? , Volume = ? where ID = ?";
+		try{
+			PreparedStatement updateBid = connection.prepareStatement(preUpdateQuery);
+			updateBid.setDouble(1, tmpPrice);
+			updateBid.setInt(2, tmpVol);
+			updateBid.setLong(3, tmpID);
+			updateBid.executeUpdate();
+			
+			updateBid.close();
+		}catch (Exception e){
+			System.out.println("In updateBidList:  " + e);
+		}
+	}
+	public void updateAskList(long tmpID, double tmpPrice, int tmpVol) {
+		String preUpdateQuery = "update ask_list set Price = ? , Volume = ? where ID = ?";
+		try{
+			PreparedStatement updateAsk = connection.prepareStatement(preUpdateQuery);
+			updateAsk.setDouble(1, tmpPrice);
+			updateAsk.setInt(2, tmpVol);
+			updateAsk.setLong(3, tmpID);
+			updateAsk.executeUpdate();
+			
+			updateAsk.close();
+		}catch (Exception e){
+			System.out.println("In updateAskList:  " + e);
+		}
+	}
+	public void deleteOneFromList(long tmpID, String type) {
+		String deleteQuery = "delete from " + type + " where ID = ?";
+		try{
+			PreparedStatement deleteListQuery = connection.prepareStatement(deleteQuery);
+			deleteListQuery.setLong(1, tmpID);
+			deleteListQuery.executeUpdate();
+			deleteListQuery.close();
+		}catch (Exception e){
+			System.out.println("In deleteOneFromList:  " + e);
 		}
 	}
 	public void printTwoList() {

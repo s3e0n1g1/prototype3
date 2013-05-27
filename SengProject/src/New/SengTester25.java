@@ -8,7 +8,6 @@ public class SengTester25 {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//double[] tradeList = new double[10]; //these are trades that is happening 
 		
 		LinkedList<TradeObject> tradeListPast = new LinkedList<TradeObject>();
 		int currentTime = 20; // this is a varaible which is from time varable in trade to show us current time

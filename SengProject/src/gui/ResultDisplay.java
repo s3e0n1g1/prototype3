@@ -24,7 +24,6 @@ public class ResultDisplay extends JFrame {
 		setTitle("Result"); 
 		setSize(800,600);
 		setLocationRelativeTo( null );
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 		
 		LineGraph returntimegraph = new LineGraph("Today's Trades");

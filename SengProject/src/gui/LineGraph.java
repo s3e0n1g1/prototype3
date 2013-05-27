@@ -38,76 +38,58 @@ public class LineGraph extends JPanel{
 
 	    }    
 	*/
+    private static XYSeries series2;
     public LineGraph(final String title) {
-
-
-        final XYDataset dataset = createDataset();
-        final JFreeChart chart = createChart(dataset);
-        final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(750, 450));
-        add(chartPanel);
-
+    	series2 = new XYSeries("Input");
     }
     
-    private XYDataset createDataset() {
-        
-        final XYSeries series1 = new XYSeries("Day 1");
-        series1.add(11.30, 1.5);
-        series1.add(11.35, 1.2);
-        series1.add(11.36, 1.4);
-        series1.add(11.59, 1.5);
-        series1.add(12.00, 1.7);
-        series1.add(12.30, 1.8);
-        series1.add(12.30, 2.2);
-        series1.add(13.00, 2.4);
-        series1.add(14.30, 1.2);
-        series1.add(14.35, 1.6);
-        series1.add(14.36, 2.3);
-        series1.add(14.59, 2.2);
-        series1.add(15.00, 5.8);
-        series1.add(15.30, 3.3);
-        series1.add(15.30, 2.2);
-        series1.add(16.00, 2.8);
-        series1.add(16.30, 2.6);
-        series1.add(16.35, 3.5);
-        series1.add(16.36, 1.2);
-        series1.add(16.59, 3.2);
-        series1.add(17.00, 5.3);
-        series1.add(17.30, 2.1);
-        series1.add(18.30, 1.2);
-        series1.add(19.00, 6.3);
-        final XYSeries series2 = new XYSeries("Day 2");
-        series2.add(11.30, 1.0);
-        series2.add(11.35, 1.0);
-        series2.add(11.36, 1.0);
-        series2.add(11.59, 1.5);
-        series2.add(12.00, 1.7);
-        series2.add(12.30, 1.2);
-        series2.add(12.30, 2.2);
-        series2.add(13.00, 2.4);
-        series2.add(14.30, 1.2);
-        series2.add(14.35, 1.6);
-        series2.add(14.36, 2.3);
-        series2.add(14.59, 2.2);
-        series2.add(15.00, 5.8);
-        series2.add(15.30, 3.3);
-        series2.add(15.30, 2.2);
-        series2.add(16.00, 2.2);
-        series2.add(16.30, 2.6);
-        series2.add(16.35, 3.2);
-        series2.add(16.36, 6.2);
-        series2.add(16.59, 4.2);
-        series2.add(17.00, 2.3);
-        series2.add(17.30, 3.1);
-        series2.add(18.30, 3.2);
-        series2.add(19.00, 3.3);
-        final XYSeries series3 = new XYSeries("Day 3");
+    public void finishGraph() {
+        //final XYDataset dataset = createDataset();
+    	createFakeDataset();
+    	final JFreeChart chart = createChart(getDataset());
+        final ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(650, 400));
+        add(chartPanel);
+    }
+    
+       
+    public static void addToDataset(double d, double e) {
+    	series2.add(d, e);
+    }
+
+    private void createFakeDataset() {
+        series2.add(1130.0, 1.0);
+        series2.add(1135.0,1.0);
+        series2.add(1136.0,1.0);
+        series2.add(1159.0, 1.5);
+        series2.add(1200.0, 1.7);
+        series2.add(1230.0, 1.2);
+        series2.add(1230.0, 2.2);
+        series2.add(1300.0, 2.4);
+        series2.add(1430.0, 1.2);
+        series2.add(1435.0, 1.6);
+        series2.add(1436.0, 2.3);
+        series2.add(1459.0, 2.2);
+        series2.add(1500.0, 5.8);
+        series2.add(1530.0, 3.3);
+        series2.add(1530.0, 2.2);
+        series2.add(1600.0, 2.2);
+        series2.add(1630.0, 2.6);
+        series2.add(1635.0, 3.2);
+        series2.add(1636.0, 6.2);
+        series2.add(1659.0, 4.2);
+        series2.add(1700.0, 2.3);
+        series2.add(1730.0, 3.1);
+        series2.add(1830.0, 3.2);
+        series2.add(1900.0, 3.3);        
+    }
+    
+    public XYDataset getDataset() {
         final XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(series1);
+        dataset.addSeries(new XYSeries("Day 1"));
         dataset.addSeries(series2);
-        dataset.addSeries(series3);      
+        dataset.addSeries(new XYSeries("Day 3"));      
         return dataset;
-        
     }
     
 
@@ -115,7 +97,7 @@ public class LineGraph extends JPanel{
         
      
         final JFreeChart chart = ChartFactory.createXYLineChart(
-            "Time graph of today's trades",   // title
+            "Time graph of trades",   // title
             "Time",                           // x axis label
             "Return",                          // y axis label
             dataset,                  // data
@@ -134,13 +116,7 @@ public class LineGraph extends JPanel{
         renderer.setSeriesLinesVisible(0, false);
         renderer.setSeriesShapesVisible(1, false);
         plot.setRenderer(renderer);
-
-        // change the auto tick unit selection to integer units only...
-        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-    
-               
-        return chart;
-        
+            
+        return chart;       
     }
 }

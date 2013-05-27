@@ -38,21 +38,26 @@ public class LineGraph extends JPanel{
 
 	    }    
 	*/
+    private static XYSeries series2;
     public LineGraph(final String title) {
-
-
-        final XYDataset dataset = createDataset();
-        final JFreeChart chart = createChart(dataset);
-        final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(750, 450));
-        add(chartPanel);
-
+    	series2 = new XYSeries("Input");
     }
     
-    private XYDataset createDataset() {
-        
-        final XYSeries series1 = new XYSeries("Day 1");
-        final XYSeries series2 = new XYSeries("Day 2");
+    public void finishGraph() {
+        //final XYDataset dataset = createDataset();
+    	createFakeDataset();
+    	final JFreeChart chart = createChart(getDataset());
+        final ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(650, 400));
+        add(chartPanel);
+    }
+    
+       
+    public static void addToDataset(double d, double e) {
+    	series2.add(d, e);
+    }
+
+    private void createFakeDataset() {
         series2.add(1130.0, 1.0);
         series2.add(1135.0,1.0);
         series2.add(1136.0,1.0);
@@ -76,14 +81,15 @@ public class LineGraph extends JPanel{
         series2.add(1700.0, 2.3);
         series2.add(1730.0, 3.1);
         series2.add(1830.0, 3.2);
-        series2.add(1900.0, 3.3);
-        final XYSeries series3 = new XYSeries("Day 3");
+        series2.add(1900.0, 3.3);        
+    }
+    
+    public XYDataset getDataset() {
         final XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(series1);
+        dataset.addSeries(new XYSeries("Day 1"));
         dataset.addSeries(series2);
-        dataset.addSeries(series3);      
+        dataset.addSeries(new XYSeries("Day 3"));      
         return dataset;
-        
     }
     
 
@@ -91,7 +97,7 @@ public class LineGraph extends JPanel{
         
      
         final JFreeChart chart = ChartFactory.createXYLineChart(
-            "Time graph of today's trades",   // title
+            "Time graph of trades",   // title
             "Time",                           // x axis label
             "Return",                          // y axis label
             dataset,                  // data
@@ -110,13 +116,7 @@ public class LineGraph extends JPanel{
         renderer.setSeriesLinesVisible(0, false);
         renderer.setSeriesShapesVisible(1, false);
         plot.setRenderer(renderer);
-
-        // change the auto tick unit selection to integer units only...
-        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-    
-               
-        return chart;
-        
+            
+        return chart;       
     }
 }

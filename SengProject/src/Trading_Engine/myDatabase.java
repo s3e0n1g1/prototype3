@@ -5,7 +5,7 @@ import java.sql.*;
 
 public class myDatabase {
 	private static Connection connection;
-	
+
 	public myDatabase(){
 		try {
 			Class.forName("org.sqlite.JDBC");
@@ -72,7 +72,7 @@ public class myDatabase {
 			System.out.println("amend: " + amend);
 			System.out.println("delete: " + delete);
 			System.out.println("trade: " + trade);
-			
+
 			orderBookQuery.close();
 		}catch(Exception e){
 			System.out.println("In insertAllDatabase: " + e);
@@ -166,7 +166,7 @@ public class myDatabase {
 	public static void insertQuery(PreparedStatement pstmt, String[] insertElement){
 		try {
 			int lengthOfArray = insertElement.length;
-			//System.out.println(st);
+			//System.out.println(insertElement.length);
 			pstmt.setString(1, insertElement[0]);
 
 			String tempDate = insertElement[1].substring(0, 4) + "-" 
@@ -190,15 +190,19 @@ public class myDatabase {
 			}else {
 				pstmt.setInt(8, Integer.parseInt(insertElement[6]));
 			}
-			if(insertElement[7].isEmpty()){
-				pstmt.setNull(9, java.sql.Types.FLOAT);
-			}else {
-				pstmt.setFloat(9, Float.parseFloat(insertElement[7]));
+			if(lengthOfArray > 7){
+				if(insertElement[7].isEmpty()){
+					pstmt.setNull(9, java.sql.Types.FLOAT);
+				}else {
+					pstmt.setFloat(9, Float.parseFloat(insertElement[7]));
+				}
 			}
-			if(insertElement[8].isEmpty()){
-				pstmt.setNull(10, java.sql.Types.VARCHAR);
-			}else {
-				pstmt.setString(10, insertElement[8]);
+			if(lengthOfArray > 8){
+				if(insertElement[8].isEmpty()){
+					pstmt.setNull(10, java.sql.Types.VARCHAR);
+				}else {
+					pstmt.setString(10, insertElement[8]);
+				}
 			}
 			if(lengthOfArray > 9){
 				if(insertElement[9].isEmpty()){
@@ -321,12 +325,12 @@ public class myDatabase {
 			int[] i2 = BidQuery.executeBatch();
 			int[] i3 = AskQuery.executeBatch();
 			int[] i4 = TradeQuery.executeBatch();
-			
+
 			System.out.println("i1 length: " + i1.length + " " + i1[0] + " " + i1[1]);
 			System.out.println("i2 length: " + i2.length + " " + i2[0] + " " + i2[1]);
 			System.out.println("i3 length: " + i3.length + " " + i3[0] + " " + i3[1]);
 			System.out.println("i4 length: " + i4.length + " " + i4[0] + " " + i4[1]);
-			
+
 			orderBookQuery.close();
 			BidQuery.close();
 			AskQuery.close();
@@ -516,12 +520,12 @@ public class myDatabase {
 	}
 	public void initTwoList() {
 		String tableQuery = "ID" + " bigint, " + "Price" + " float, " + "Volume" + " integer ";
-		
+
 		try{
 			Statement s = connection.createStatement();
 			s.execute("create table bid_list(" + tableQuery + ")");
 			s.execute("create table ask_list(" + tableQuery + ")");
-			
+
 			s.close();
 		}catch (Exception e){
 			System.out.println("In initTwoList:  " + e);
@@ -539,13 +543,44 @@ public class myDatabase {
 	public void insertBidList(long tmpID, double tmpPrice, int tmpVol) {
 		String preInsertQuery = "insert into bid_list values(?,?,?)";
 		try{
-			PreparedStatement bidListQuery = connection.prepareStatement(preInsertQuery);
-			bidListQuery.setLong(1, tmpID);
-			bidListQuery.setDouble(2, tmpPrice);
-			bidListQuery.setInt(3, tmpVol);
-			bidListQuery.executeUpdate();
-			
-			bidListQuery.close();
+			Statement statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery("select * from ask_list order by Price asc limit 1");
+			if(rs!=null){
+				if(rs.next()){
+					Long firstAskListID = rs.getLong(1);
+					double firstAskListPrice = rs.getDouble(2);
+					int firstAskListVol = rs.getInt(3);
+					if(tmpPrice >= firstAskListPrice){
+						System.out.println("A trade is performed!!");
+						if(tmpVol == firstAskListVol){
+							deleteOneFromList(firstAskListID,"ask_list");
+						}else if(tmpVol > firstAskListVol){
+							deleteOneFromList(firstAskListID,"ask_list");
+							tmpVol -= firstAskListVol;
+							insertBidList(tmpID,tmpPrice,tmpVol);
+						}else{
+							firstAskListVol -= tmpVol;
+							updateAskList(firstAskListID,firstAskListPrice,firstAskListVol);
+						}
+					}else{
+						PreparedStatement bidListQuery = connection.prepareStatement(preInsertQuery);
+						bidListQuery.setLong(1, tmpID);
+						bidListQuery.setDouble(2, tmpPrice);
+						bidListQuery.setInt(3, tmpVol);
+						bidListQuery.executeUpdate();
+						bidListQuery.close();
+					}
+				}else{
+					PreparedStatement bidListQuery = connection.prepareStatement(preInsertQuery);
+					bidListQuery.setLong(1, tmpID);
+					bidListQuery.setDouble(2, tmpPrice);
+					bidListQuery.setInt(3, tmpVol);
+					bidListQuery.executeUpdate();
+					bidListQuery.close();
+				}
+			}
+			rs.close();
+			statement.close();
 		}catch (Exception e){
 			System.out.println("In insertBidList:  " + e);
 		}
@@ -553,13 +588,44 @@ public class myDatabase {
 	public void insertAskList(long tmpID, double tmpPrice, int tmpVol) {
 		String preInsertQuery = "insert into ask_list values(?,?,?)";
 		try{
-			PreparedStatement askListQuery = connection.prepareStatement(preInsertQuery);
-			askListQuery.setLong(1, tmpID);
-			askListQuery.setDouble(2, tmpPrice);
-			askListQuery.setInt(3, tmpVol);
-			askListQuery.executeUpdate();
-			
-			askListQuery.close();
+			Statement statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery("select * from bid_list order by Price desc limit 1");
+			if(rs!=null){
+				if(rs.next()){
+					Long firstAskListID = rs.getLong(1);
+					double firstAskListPrice = rs.getDouble(2);
+					int firstAskListVol = rs.getInt(3);
+					if(tmpPrice <= firstAskListPrice){
+						System.out.println("A trade is performed!!");
+						if(tmpVol == firstAskListVol){
+							deleteOneFromList(firstAskListID,"bid_list");
+						}else if(tmpVol > firstAskListVol){
+							deleteOneFromList(firstAskListID,"bid_list");
+							tmpVol -= firstAskListVol;
+							insertAskList(tmpID,tmpPrice,tmpVol);
+						}else{
+							firstAskListVol -= tmpVol;
+							updateAskList(firstAskListID,firstAskListPrice,firstAskListVol);
+						}
+					}else{
+						PreparedStatement askListQuery = connection.prepareStatement(preInsertQuery);
+						askListQuery.setLong(1, tmpID);
+						askListQuery.setDouble(2, tmpPrice);
+						askListQuery.setInt(3, tmpVol);
+						askListQuery.executeUpdate();
+						askListQuery.close();
+					}
+				}else{
+					PreparedStatement askListQuery = connection.prepareStatement(preInsertQuery);
+					askListQuery.setLong(1, tmpID);
+					askListQuery.setDouble(2, tmpPrice);
+					askListQuery.setInt(3, tmpVol);
+					askListQuery.executeUpdate();
+					askListQuery.close();
+				}
+			}
+			rs.close();
+			statement.close();
 		}catch (Exception e){
 			System.out.println("In insertAskList:  " + e);
 		}
@@ -572,7 +638,7 @@ public class myDatabase {
 			updateBid.setInt(2, tmpVol);
 			updateBid.setLong(3, tmpID);
 			updateBid.executeUpdate();
-			
+
 			updateBid.close();
 		}catch (Exception e){
 			System.out.println("In updateBidList:  " + e);
@@ -586,7 +652,7 @@ public class myDatabase {
 			updateAsk.setInt(2, tmpVol);
 			updateAsk.setLong(3, tmpID);
 			updateAsk.executeUpdate();
-			
+
 			updateAsk.close();
 		}catch (Exception e){
 			System.out.println("In updateAskList:  " + e);

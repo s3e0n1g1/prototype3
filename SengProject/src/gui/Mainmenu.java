@@ -127,10 +127,6 @@ public class Mainmenu  extends JFrame{
 													tmpID = set.getLong(13);
 													lastSale = new orderObject(tmpVol,tmpPrice);
 													myDB.insertAskList(tmpID,tmpPrice,tmpVol);
-													selltable.setValueAt("1", 1, 0);
-													selltable.setValueAt(tmpID, 1, 1);
-													selltable.setValueAt(tmpPrice, 1, 2);
-													selltable.setValueAt(tmpVol, 1, 3);
 												}
 												if(tempSignal.getType().equalsIgnoreCase("buy")){
 													buySig++;

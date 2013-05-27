@@ -47,7 +47,8 @@ public class ResultDisplay extends JFrame {
 		JMenu file = new JMenu("File");
 		JMenuItem match = new JMenuItem("Run Matching");
 		JMenuItem quit = new JMenuItem("Close");
-		menubar.add(match);
+		
+		file.add(match);
 		menubar.add(file);
 		file.add(quit);
 

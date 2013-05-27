@@ -3,6 +3,7 @@ package gui;
 import java.awt.Color;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -19,7 +20,7 @@ import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
 
-public class LineGraph extends JFrame{
+public class LineGraph extends JPanel{
 	/* 
 	private static final long serialVersionUID = 1L
 	  public Graph(String applicationTitle, String chartTitle) {
@@ -39,13 +40,12 @@ public class LineGraph extends JFrame{
 	*/
     public LineGraph(final String title) {
 
-        super(title);
 
         final XYDataset dataset = createDataset();
         final JFreeChart chart = createChart(dataset);
         final ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new java.awt.Dimension(750, 450));
-        setContentPane(chartPanel);
+        add(chartPanel);
 
     }
     

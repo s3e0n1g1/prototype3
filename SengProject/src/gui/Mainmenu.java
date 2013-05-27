@@ -33,7 +33,7 @@ public class Mainmenu  extends JFrame{
 		buytable = new OrderbookTable();
 		selltable = new OrderbookTable();
 		JTabbedPane jtb = new JTabbedPane();
-		
+
 		Container con = this.getContentPane();
 		//con.add(pane); 
 		con.add(jtb);
@@ -61,6 +61,8 @@ public class Mainmenu  extends JFrame{
 							} catch (Exception e) {
 								console.append("Cannot insert csv to database\n");
 							}
+							ResultDisplay myResult = new ResultDisplay();
+							myResult.setVisible(true);
 							//String tmp = myDB.getRowCount();
 							//console.append(tmp);
 							console.append("CSV loaded.\nPlease select a strategy.\n");
@@ -91,126 +93,7 @@ public class Mainmenu  extends JFrame{
 							if (choosestrat.getSelectedIndex() == 0) { //momentum
 								//todo: move strategy related functions to strategy package
 								//myTrade rs = myDB.getTrade("SELECT * FROM trade_list ORDER BY Entry_Time DESC limit 1000;");
-								try {
-									ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
-									if(set != null){
-										int count = 0;
-										String tmp;
-										String tmpType;
-										double tmpPrice;
-										int tmpVol;
-										long tmpID = 0;
-										int buySig = 0;
-										int sellSig = 0;
-										double profit = 0;
-										int tmpCount1 = 0;
-										int tmpCount2 = 0;
-										newMomentum moment = new newMomentum();
-										signalObject tempSignal;
-										signalObject lastBuySig = null;
-										orderObject lastSale = new orderObject( -1, -1);
-										orderObject lastBuy = new orderObject( -1, -1);
-										myDB.initTwoList();
-										while (set.next()){
-											tmp = set.getString(5);
-											tmpType = set.getString(14);
-											if(tmp.equalsIgnoreCase("ENTER")){
-												tmpPrice = set.getDouble(6);
-												tmpVol = set.getInt(7);
-												moment.addTrade(tmpPrice);
-												tempSignal = moment.generateOrderSignal(lastSale, lastBuy);
-												if(tmpType.equalsIgnoreCase("B")){
-													tmpID = set.getLong(12);
-													lastBuy = new orderObject(tmpVol,tmpPrice);
-													myDB.insertBidList(tmpID,tmpPrice,tmpVol);
-												}else if(tmpType.equalsIgnoreCase("A")){
-													tmpID = set.getLong(13);
-													lastSale = new orderObject(tmpVol,tmpPrice);
-													myDB.insertAskList(tmpID,tmpPrice,tmpVol);
-												}
-												if(tempSignal.getType().equalsIgnoreCase("buy")){
-													buySig++;
-													moment.getreceiptNumber(buySig);
-													lastBuySig = tempSignal;
-													//System.out.println("buy generated - count " + count);
-												}else if(tempSignal.getType().equalsIgnoreCase("sell")){
-													moment.getreceiptNumber(sellSig);
-													profit += (tempSignal.getPrice() - lastBuySig.getPrice());
-													sellSig++;
-													//System.out.println("sell generated - count " + count);
-													
-												}
-												
-												
-											}else if (tmp.equalsIgnoreCase("AMEND")){
-												
-												tmpPrice = set.getLong(12);
-												tmpVol = set.getInt(7);
-												if(tmpType.equalsIgnoreCase("B")){
-													tmpID = set.getLong(12);
-													myDB.updateBidList(tmpID, tmpPrice, tmpVol);
-												}else if(tmpType.equalsIgnoreCase("A")){
-													tmpID = set.getLong(13);
-													myDB.updateBidList(tmpID, tmpPrice, tmpVol);
-												}
-											}else if (tmp.equalsIgnoreCase("DELETE")){
-												
-												if(tmpType.equalsIgnoreCase("B")){
-													tmpID = set.getLong(12);
-													myDB.deleteOneFromList(tmpID, "bid_list");
-												}else if(tmpType.equalsIgnoreCase("A")){
-													tmpID = set.getLong(13);
-													myDB.deleteOneFromList(tmpID, "ask_list");
-												}
-											}
-											count++;
-										};
-										System.out.println("count : " + count);
-										console.append("Total lines read : " + count + "\n");
-										console.append("Strategy generate " + buySig + " buy signals.\n");
-										console.append("Strategy generate " + sellSig + " sell signals.\n");
-										console.append("Profit gain: " + profit + "\n");
-										myDB.printTwoList();
-										myDB.closeTwoList();
-									}else{
-										System.out.println("set equals null");
-									}
-									ResultSet bidleft = myDB.getResultSet("SELECT count(*) FROM bid_list;");
-									ResultSet askleft = myDB.getResultSet("SELECT count(*) FROM ask_list;");
-									if(bidleft!=null){
-										if(bidleft.next()){
-											console.append("bid_list left with " + bidleft.getString(1) + " lines.\n");
-										}
-									}
-									if(askleft!=null){
-										if(askleft.next()){
-											console.append("ask_list left with " + askleft.getString(1) + " lines.\n");
-										}
-									}
-									
-									/*
-									if(rs.getLength() > 0){
-										//int i = 0;
-										double result;
-
-										MomentumStrategy ms = new MomentumStrategy();
-										ms.runStrategy(rs.getAllPrice());
-										result = ms.evaluteTheStrategy();
-										console.append("Average return of " + Double.toString(result) + "\n");
-										String signal = "Buy";
-
-										if (result > 0.0)
-											signal = "Sell";
-										console.append("Evaluating strategy based on: "+ signal + " Signal \n");
-									} else {
-										console.append("rs null");
-									}*/
-									askleft.close();
-									bidleft.close();
-									set.close();
-								} catch (SQLException e) {
-									System.out.println("In Mainmenu/runStrategy : " + e);
-								}
+								runStrategy();
 							}
 							//==	
 						}
@@ -287,14 +170,14 @@ public class Mainmenu  extends JFrame{
 		buybook.setFillsViewportHeight(true);
 		sellTable.setPreferredSize(new Dimension(500,120));
 		sellTable.setMaximumSize(new Dimension(500,150));		
-		
+
 		selltable.addElement(fakedata1);
 		selltable.addElement(fakedata1);
 		selltable.addElement(fakedata1);
 		selltable.addElement(fakedata1);
 		console.append("To add element to table do\n");
 		console.append("selltable.addElement(data value as Object[] array)\n");
-		
+
 		JPanel buypanel = new JPanel();
 		buypanel.setLayout(new BoxLayout(buypanel, BoxLayout.PAGE_AXIS));
 		buypanel.add(new JLabel ("Buy"));
@@ -311,29 +194,29 @@ public class Mainmenu  extends JFrame{
 		//graphs panel
 
 		setVisible(true);
-	
-        LineGraph returntimegraph = new LineGraph("Today's Trades");
-        returntimegraph.pack();
-        returntimegraph.setLocationRelativeTo(null);
-        returntimegraph.setVisible(true);
-		
-        /*
+		/*
+		LineGraph returntimegraph = new LineGraph("Today's Trades");
+		returntimegraph.pack();
+		returntimegraph.setLocationRelativeTo(null);
+		returntimegraph.setVisible(true);*/
+
+		/*
         JMenuBar menubar = new JMenuBar();
         JMenu file = new JMenu("File");
         menubar.add(file);
         JMenuItem quit = new JMenuItem("Quit");
         file.add(quit);
         setJMenuBar(menubar);
-        
-        */
-        
-        JMenuBar menubar = new JMenuBar();
-        //Error? ImageIcon icon = new ImageIcon(getClass().getResource("exit.png"));
 
-        JMenu file = new JMenu("File");
-        file.setMnemonic(KeyEvent.VK_F);
+		 */
 
-        /*
+		JMenuBar menubar = new JMenuBar();
+		//Error? ImageIcon icon = new ImageIcon(getClass().getResource("exit.png"));
+
+		JMenu file = new JMenu("File");
+		file.setMnemonic(KeyEvent.VK_F);
+
+		/*
         JMenuItem eMenuItem = new JMenuItem("Exit", icon);
         eMenuItem.setMnemonic(KeyEvent.VK_C);
         eMenuItem.setToolTipText("Exit application");
@@ -344,14 +227,133 @@ public class Mainmenu  extends JFrame{
 
         });*/
 
-        //file.add(eMenuItem);
+		//file.add(eMenuItem);
 
-        menubar.add(file);
+		menubar.add(file);
 
-        setJMenuBar(menubar);
-        
+		setJMenuBar(menubar);
+
+	}
+	protected void runStrategy() {
+		try {
+			ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
+			if(set != null){
+				int count = 0;
+				String tmp;
+				String tmpType;
+				double tmpPrice;
+				int tmpVol;
+				long tmpID = 0;
+				int buySig = 0;
+				int sellSig = 0;
+				double profit = 0;
+				int tmpCount1 = 0;
+				int tmpCount2 = 0;
+				newMomentum moment = new newMomentum();
+				signalObject tempSignal;
+				signalObject lastBuySig = null;
+				orderObject lastSale = new orderObject( -1, -1);
+				orderObject lastBuy = new orderObject( -1, -1);
+				myDB.initTwoList();
+				while (set.next()){
+					tmp = set.getString(5);
+					tmpType = set.getString(14);
+					if(tmp.equalsIgnoreCase("ENTER")){
+						tmpPrice = set.getDouble(6);
+						tmpVol = set.getInt(7);
+						moment.addTrade(tmpPrice);
+						tempSignal = moment.generateOrderSignal(lastSale, lastBuy);
+						if(tmpType.equalsIgnoreCase("B")){
+							tmpID = set.getLong(12);
+							lastBuy = new orderObject(tmpVol,tmpPrice);
+							myDB.insertBidList(tmpID,tmpPrice,tmpVol);
+						}else if(tmpType.equalsIgnoreCase("A")){
+							tmpID = set.getLong(13);
+							lastSale = new orderObject(tmpVol,tmpPrice);
+							myDB.insertAskList(tmpID,tmpPrice,tmpVol);
+						}
+						if(tempSignal.getType().equalsIgnoreCase("buy")){
+							buySig++;
+							moment.getreceiptNumber(buySig);
+							lastBuySig = tempSignal;
+							//System.out.println("buy generated - count " + count);
+						}else if(tempSignal.getType().equalsIgnoreCase("sell")){
+							moment.getreceiptNumber(sellSig);
+							profit += (tempSignal.getPrice() - lastBuySig.getPrice());
+							sellSig++;
+							//System.out.println("sell generated - count " + count);
+						}
+					}else if (tmp.equalsIgnoreCase("AMEND")){
+
+						tmpPrice = set.getLong(12);
+						tmpVol = set.getInt(7);
+						if(tmpType.equalsIgnoreCase("B")){
+							tmpID = set.getLong(12);
+							myDB.updateBidList(tmpID, tmpPrice, tmpVol);
+						}else if(tmpType.equalsIgnoreCase("A")){
+							tmpID = set.getLong(13);
+							myDB.updateBidList(tmpID, tmpPrice, tmpVol);
+						}
+					}else if (tmp.equalsIgnoreCase("DELETE")){
+
+						if(tmpType.equalsIgnoreCase("B")){
+							tmpID = set.getLong(12);
+							myDB.deleteOneFromList(tmpID, "bid_list");
+						}else if(tmpType.equalsIgnoreCase("A")){
+							tmpID = set.getLong(13);
+							myDB.deleteOneFromList(tmpID, "ask_list");
+						}
+					}
+					count++;
+				};
+				System.out.println("count : " + count);
+				console.append("Total lines read : " + count + "\n");
+				console.append("Strategy generate " + buySig + " buy signals.\n");
+				console.append("Strategy generate " + sellSig + " sell signals.\n");
+				console.append("Profit gain: " + profit + "\n");
+				myDB.printTwoList();
+				myDB.closeTwoList();
+			}else{
+				System.out.println("set equals null");
+			}
+			ResultSet bidleft = myDB.getResultSet("SELECT count(*) FROM bid_list;");
+			ResultSet askleft = myDB.getResultSet("SELECT count(*) FROM ask_list;");
+			if(bidleft!=null){
+				if(bidleft.next()){
+					console.append("bid_list left with " + bidleft.getString(1) + " lines.\n");
+				}
+			}
+			if(askleft!=null){
+				if(askleft.next()){
+					console.append("ask_list left with " + askleft.getString(1) + " lines.\n");
+				}
+			}
+
+			/*
+			if(rs.getLength() > 0){
+				//int i = 0;
+				double result;
+
+				MomentumStrategy ms = new MomentumStrategy();
+				ms.runStrategy(rs.getAllPrice());
+				result = ms.evaluteTheStrategy();
+				console.append("Average return of " + Double.toString(result) + "\n");
+				String signal = "Buy";
+
+				if (result > 0.0)
+					signal = "Sell";
+				console.append("Evaluating strategy based on: "+ signal + " Signal \n");
+			} else {
+				console.append("rs null");
+			}*/
+			askleft.close();
+			bidleft.close();
+			set.close();
+		} catch (SQLException e) {
+			System.out.println("In Mainmenu/runStrategy : " + e);
+		}
 	}
 
-    
-	
+
+
 }

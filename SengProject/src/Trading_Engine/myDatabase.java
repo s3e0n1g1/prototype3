@@ -5,6 +5,7 @@ import java.sql.*;
 
 public class myDatabase {
 	private static Connection connection;
+	private int totalMatch;
 
 	public myDatabase(){
 		try {
@@ -25,6 +26,8 @@ public class myDatabase {
 			String st = "";
 			String preInsertQuery = "insert into " + dbName +"(" + newHead + ")values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			PreparedStatement orderBookQuery = con.prepareStatement(preInsertQuery);
+			String tradeQuery = "insert into old_trade_list(" + newHead + ")values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			PreparedStatement tradePre = con.prepareStatement(tradeQuery);
 			con.setAutoCommit(false);
 			int count = 0;
 			int enter = 0;
@@ -48,6 +51,7 @@ public class myDatabase {
 				}else if(insertElement[3].equalsIgnoreCase("DELETE") ){
 					delete++;
 				}else if(insertElement[3].equalsIgnoreCase("TRADE") ){
+					insertQuery(tradePre,insertElement);
 					trade++;
 				}else{
 					other++;
@@ -57,8 +61,12 @@ public class myDatabase {
 				if(count%1000 == 0){
 					orderBookQuery.executeBatch();
 				}
+				if(trade%1000 == 0){
+					tradePre.executeBatch();
+				}
 			}
 			orderBookQuery.executeBatch();
+			tradePre.executeBatch();
 			con.commit();
 			reply = "total length of CSV file is " + count + " lines. \n" 
 					+ "ENTER consist of " + enter + " lines which ask has " 
@@ -129,6 +137,7 @@ public class myDatabase {
 					}
 					//System.out.println(tableQuery);
 					s.execute("create table " + dbName + "(" + tableQuery + ")");
+					s.execute("create table old_trade_list(" + tableQuery + ")");
 					reply = insertAllDatabase(connection,br,newHead,dbName);
 				} else {
 					System.out.println("Error: file content not csv format");
@@ -520,22 +529,21 @@ public class myDatabase {
 	}
 	public void initTwoList() {
 		String tableQuery = "ID" + " bigint, " + "Price" + " float, " + "Volume" + " integer ";
-
+		totalMatch = 0;
 		try{
 			Statement s = connection.createStatement();
 			s.execute("create table bid_list(" + tableQuery + ")");
 			s.execute("create table ask_list(" + tableQuery + ")");
 
 			s.close();
+			connection.setAutoCommit(false);
 		}catch (Exception e){
 			System.out.println("In initTwoList:  " + e);
 		}
 	}
 	public void closeTwoList() {
 		try{
-			Statement s = connection.createStatement();
-
-			s.close();
+			connection.commit();
 		}catch (Exception e){
 			System.out.println("In closeTwoList:  " + e);
 		}
@@ -551,7 +559,8 @@ public class myDatabase {
 					double firstAskListPrice = rs.getDouble(2);
 					int firstAskListVol = rs.getInt(3);
 					if(tmpPrice >= firstAskListPrice){
-						System.out.println("A trade is performed!!");
+						totalMatch++;
+						//System.out.println("A trade is performed!!");
 						if(tmpVol == firstAskListVol){
 							deleteOneFromList(firstAskListID,"ask_list");
 						}else if(tmpVol > firstAskListVol){
@@ -596,7 +605,8 @@ public class myDatabase {
 					double firstAskListPrice = rs.getDouble(2);
 					int firstAskListVol = rs.getInt(3);
 					if(tmpPrice <= firstAskListPrice){
-						System.out.println("A trade is performed!!");
+						totalMatch++;
+						//System.out.println("A trade is performed!!");
 						if(tmpVol == firstAskListVol){
 							deleteOneFromList(firstAskListID,"bid_list");
 						}else if(tmpVol > firstAskListVol){
@@ -672,16 +682,17 @@ public class myDatabase {
 	public void printTwoList() {
 		try{
 			Statement s = connection.createStatement();
+			System.out.println("Number of Match occur: " + totalMatch);
 			ResultSet rs = s.executeQuery("SELECT count(*) FROM bid_list;");
 			if(rs!=null){
 				if(rs.next()){
-					System.out.println("bid_list contains " + rs.getString(1) + " lines.\n");
+					System.out.println("bid_list contains " + rs.getString(1) + " lines.");
 				}
 			}
 			rs = s.executeQuery("SELECT count(*) FROM ask_list;");
 			if(rs!=null){
 				if(rs.next()){
-					System.out.println("ask_list contains " + rs.getString(1) + " lines.\n");
+					System.out.println("ask_list contains " + rs.getString(1) + " lines.");
 				}
 			}
 			rs.close();

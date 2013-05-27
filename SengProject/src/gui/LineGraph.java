@@ -21,42 +21,29 @@ import org.jfree.ui.RefineryUtilities;
 
 
 public class LineGraph extends JPanel{
-	/* 
-	private static final long serialVersionUID = 1L
-	  public Graph(String applicationTitle, String chartTitle) {
-	        super(applicationTitle);
-	        // This will create the dataset 
-	        PieDataset dataset = createDataset();
-	        // based on the dataset we create the chart
-	        JFreeChart chart = createChart(dataset, chartTitle);
-	        // we put the chart into a panel
-	        ChartPanel chartPanel = new ChartPanel(chart);
-	        // default size
-	        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
-	        // add it to our application
-	        setContentPane(chartPanel);
-
-	    }    
-	*/
     private static XYSeries series2;
+    private String title;
     public LineGraph(final String title) {
     	series2 = new XYSeries("Input");
+    	this.title = title;
     }
     
     public void finishGraph() {
         //final XYDataset dataset = createDataset();
-    	createFakeDataset();
+    	//createFakeDataset();
     	final JFreeChart chart = createChart(getDataset());
         final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(650, 400));
+        chartPanel.setPreferredSize(new java.awt.Dimension(500, 350));
         add(chartPanel);
     }
     
+    //data can be added individually
+    //check graphPanel() in ResultDisplay.java for example
        
     public static void addToDataset(double d, double e) {
     	series2.add(d, e);
     }
-
+/*
     private void createFakeDataset() {
         series2.add(1130.0, 1.0);
         series2.add(1135.0,1.0);
@@ -83,7 +70,7 @@ public class LineGraph extends JPanel{
         series2.add(1830.0, 3.2);
         series2.add(1900.0, 3.3);        
     }
-    
+    */
     public XYDataset getDataset() {
         final XYSeriesCollection dataset = new XYSeriesCollection();
         dataset.addSeries(new XYSeries("Day 1"));
@@ -95,9 +82,8 @@ public class LineGraph extends JPanel{
 
     private JFreeChart createChart(final XYDataset dataset) {
         
-     
         final JFreeChart chart = ChartFactory.createXYLineChart(
-            "Time graph of trades",   // title
+            title,   // title
             "Time",                           // x axis label
             "Return",                          // y axis label
             dataset,                  // data

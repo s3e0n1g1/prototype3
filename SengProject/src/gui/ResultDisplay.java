@@ -3,6 +3,8 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,7 +16,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -24,10 +28,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.xy.XYDataset;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 
 import New.lecMS;
 import Selecting_Algothrim.newMomentum;
@@ -39,12 +41,13 @@ import Trading_Engine.ResultData;
 import Trading_Engine.myDatabase;
 
 public class ResultDisplay extends JFrame {
-	public static myDatabase myDB;
+	public static myDatabase myDB; 
 	public ResultDisplay(String frametitle, myDatabase db){
 		myDB = db;
 		JTabbedPane jtb = new JTabbedPane();
 		Container con = this.getContentPane(); 
 		con.add(jtb);
+		
 		setTitle(frametitle); 
 		setSize(800,600);
 		setLocationRelativeTo(null);
@@ -54,10 +57,8 @@ public class ResultDisplay extends JFrame {
 		JMenuBar menubar = new JMenuBar();
 
 		JMenu file = new JMenu("File");
-		JMenuItem match = new JMenuItem("Run Matching");
 		JMenuItem quit = new JMenuItem("Close");
 
-		file.add(match);
 		menubar.add(file);
 		file.add(quit);
 
@@ -82,97 +83,116 @@ public class ResultDisplay extends JFrame {
 
 		momstrategy.addActionListener(
 				new ActionListener() {
-					public void actionPerformed(ActionEvent event) {			
-						runNewStrategy();						
+					public void actionPerformed(ActionEvent event) {	
+						//open new frame for strategy analysis
+						myStrategyResult = new StrategySelected();
+						myStrategyResult.setVisible(true);
+						//run strategy to update the new frame's table
+						//include all data changes here, i.e graph
+						runNewStrategy();					
 					}
 				}
 				);	
-
 		setVisible(true);
 	}
 
-	private JLabel AmendLines;
-	private JLabel EnterLines;
-	private JLabel DeleteLines;
-	private JLabel TradeLines;
-	private JLabel ReturnCalculated;
-	private JLabel TotalLines;
+	public JLabel LinesRead;
+	public JLabel MatchedLines;
+	public JLabel UpdatedLines;
+	public JLabel DeletedLines;
+	public JLabel BidList;
+	public JLabel AskList;
 
 	private JPanel analysisPanel() {
+		JPanel toppanel = new JPanel();
 		JPanel analysispanel = new JPanel();
 		JPanel panel = new JPanel();
-		analysispanel.add(panel);
-		AmendLines = new JLabel("amend text");
-		EnterLines = new JLabel("enter text");
-		DeleteLines = new JLabel("delete text");
-		TradeLines = new JLabel("tradelines text");
-		ReturnCalculated = new JLabel();
-		TotalLines = new JLabel("total text");
-		panel.setLayout((new BoxLayout(panel, BoxLayout.PAGE_AXIS)));
+		JPanel panel2 = new JPanel();
+		
 		Dimension d = new Dimension(150,100);
+		panel.setLayout((new BoxLayout(panel, BoxLayout.PAGE_AXIS)));
+		
 		panel.setSize(d);
 		panel.setPreferredSize(d);
 		panel.setMaximumSize(d);
-
-		panel.add(new JLabel("AMEND consist of"));
-		panel.add(new JLabel("ENTER consist of"));		
-		panel.add(new JLabel("DELETE consist of"));		
-		panel.add(new JLabel("TRADE consist of"));		
-		panel.add(new JLabel("Total lines consist of"));	
-		panel.add(new JLabel("Return"));
-
-		ReturnCalculated.setText("212");
-
-		JPanel panel2 = new JPanel();	
+		
 		panel2.setLayout((new BoxLayout(panel2, BoxLayout.PAGE_AXIS)));
 		panel2.setSize(d);
 		panel2.setPreferredSize(d);
 		panel2.setMaximumSize(d);
+		
+		
+		LinesRead = new JLabel("lines read");
+		MatchedLines = new JLabel("matched");
+		UpdatedLines = new JLabel("updated");
+		DeletedLines = new JLabel("delete text");
+		BidList = new JLabel("total text");
+		AskList = new JLabel("tradelines text");
 
-		panel2.add(AmendLines);
-		panel2.add(EnterLines);
-		panel2.add(DeleteLines);
-		panel2.add(TradeLines);
-		panel2.add(TotalLines);
-		panel2.add(ReturnCalculated);
+		panel.add(new JLabel("Total lines read:"));
+		panel.add(new JLabel("Total lines matched:"));	
+		panel.add(new JLabel("Total lines update:"));	
+		panel.add(new JLabel("Total lines deleted:"));
+		panel.add(new JLabel("Bid list contains"));	
+		panel.add(new JLabel("Ask list contains"));
+
+		panel2.add(LinesRead);
+		panel2.add(MatchedLines);
+		panel2.add(UpdatedLines);
+		panel2.add(DeletedLines);
+		panel2.add(BidList);
+		panel2.add(AskList);
+		
+		analysispanel.add(panel);
 		analysispanel.add(panel2);
-		return analysispanel;
+		
+		toppanel.setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		
+		c.fill = GridBagConstraints.VERTICAL;
+		c.weightx = 1;
+		c.gridx = 0;
+		c.gridy = 0;	
+		analysispanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+		
+		toppanel.add(analysispanel,c);
+		c.fill = GridBagConstraints.VERTICAL;
+		c.weightx = 2;
+		c.gridx = 1;
+		c.gridy = 0;
+		toppanel.add(new JPanel(),c);
+		
+		return toppanel;
 	}
 
-	private OrderbookTable buytable;
-	private OrderbookTable selltable;
+	private OrderbookTable ordertable;
 
 	private JPanel orderbookPanel() {
 		JPanel panel = new JPanel();
-		buytable = new OrderbookTable();
-		selltable = new OrderbookTable();
+		ordertable = new OrderbookTable();
+		
+		//Date date= null;
+		
+		JTable buybook = new JTable();
+
+		buybook.setModel(ordertable);
+		/*
 		String originaltimestamp = "2010-07-14 09:00:02";
-		Date date= null;
+		String timestamp = new SimpleDateFormat("HH:mm").format(date); // 9:00
+				
 		try {
 			date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(originaltimestamp);
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		String timestamp = new SimpleDateFormat("HH:mm").format(date); // 9:00
-
-		JTable buybook = new JTable();
-		JTable sellbook = new JTable();
-
-		buybook.setModel(buytable);
-		sellbook.setModel(selltable);
-
-
-
-		Object [] fakedata1 = {100, "12:00",new Long(0), new Double(0), new Integer(0)};
-
-		buytable.addElement(fakedata1);
-		buytable.addElement(fakedata1);
-		buytable.addElement(fakedata1);
-		buytable.addElement(fakedata1);
-		selltable.addElement(fakedata1);
-		selltable.addElement(fakedata1);
-		selltable.addElement(fakedata1);
-		selltable.addElement(fakedata1);
+		*/
+		System.out.println("sdfsdfsd");
+		Object [] fakedata1 = {123,245, "$ " + Double.toString(new Double(5.30)), new Integer(43), "9:00"};
+		
+		ordertable.addElement(fakedata1);
+		ordertable.addElement(fakedata1);
+		ordertable.addElement(fakedata1);
+		ordertable.addElement(fakedata1);
 
 		Dimension d = new Dimension (500,150);
 
@@ -180,39 +200,59 @@ public class ResultDisplay extends JFrame {
 		buybook.setFillsViewportHeight(true);
 		scrollTable.setPreferredSize(d);
 		scrollTable.setMaximumSize(d);	
-
-		JScrollPane sellTable = new JScrollPane(sellbook);
-		buybook.setFillsViewportHeight(true);
-		sellTable.setPreferredSize(d);
-		sellTable.setMaximumSize(d);		
-
-		JPanel buypanel = new JPanel();
-		buypanel.setLayout(new BoxLayout(buypanel, BoxLayout.PAGE_AXIS));
-		buypanel.add(new JLabel ("Buy"));
-		buypanel.add(scrollTable);
-
-		JPanel sellpanel = new JPanel();
-		sellpanel.setLayout(new BoxLayout(sellpanel, BoxLayout.PAGE_AXIS));
-		sellpanel.add(new JLabel ("Sell"));
-		sellpanel.add(sellTable);
-
-
-		panel.add(buypanel);
-		panel.add(sellpanel);
+		
+		panel.add(scrollTable);
 		return panel;
 	}
 
 	private JPanel graphPanel(){
+
 		JPanel panel = new JPanel();
-		LineGraph returntimegraph = new LineGraph("Trades");
+		JPanel graphpanel = new JPanel();
+		
+		panel.setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+
+		//create new graph and data set
+		LineGraph returntimegraph = new LineGraph("Trades without Matching");
+		//add plots to the graph
 		LineGraph.addToDataset(200.0, 1.2);
+		LineGraph.addToDataset(230.0, 1.3);
+		LineGraph.addToDataset(300.0, 1.4);
+		LineGraph.addToDataset(400.0, 3.2);
+		LineGraph.addToDataset(810.0, 2.3);
+		LineGraph.addToDataset(240.0, 4.3);
+		LineGraph.addToDataset(546.0, 4.6);
+		//loop through database
+		
+		//finalise dataset for graph
 		returntimegraph.finishGraph();
 		returntimegraph.setVisible(true);
-		panel.add(returntimegraph);
-		panel.add(new JLabel("sdfsdfdsfdalgkadj;lfgkj"));
+		graphpanel.add(returntimegraph);
+		
+		//Configurations for graph, not sure if can be done
+
+		JPanel config = new JPanel();
+		config.setLayout((new BoxLayout(config, BoxLayout.PAGE_AXIS)));
+		config.add(new JLabel("Configure Display"));
+		JButton updategraph = new JButton("Update");
+		updategraph.setSize(new Dimension(150,75));
+		config.add(updategraph);
+		config.setBorder(new EmptyBorder(0, 0, 0, 100)) ;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0.5;
+		c.gridx = 0;
+		c.gridy = 0;
+		panel.add(graphpanel,c );
+		c.gridx = 2;
+		c.gridy = 1;
+		c.fill = GridBagConstraints.VERTICAL;
+		c.weightx = 2;
+		//panel.add(config);  <--- uncomment to display on gui
+			
 		return panel;
 	}
-
+	private StrategySelected myStrategyResult; 
 	protected void runStrategy() {
 		try {
 			ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
@@ -332,7 +372,8 @@ public class ResultDisplay extends JFrame {
 			System.out.println("In Mainmenu/runStrategy : " + e);
 		}
 	}
-
+	
+	//IMPLEMENT TRADING STRATEGY HERE
 	protected void runNewStrategy() {
 		try {
 			ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
@@ -402,6 +443,17 @@ public class ResultDisplay extends JFrame {
 			Mainmenu.console.append("Total lines delete : " + deleteLines + "\n");
 			Mainmenu.console.append("bid list contains " +  myBidList.getLength() + ".\n");
 			Mainmenu.console.append("ask list contains " +  myAskList.getLength() + ".\n");
+			
+			//update jlabels
+			myStrategyResult.LinesRead.setText(Integer.toString( count));
+			myStrategyResult.MatchedLines.setText(Integer.toString(completedTrade.size()));
+			myStrategyResult.UpdatedLines.setText(Integer.toString(updateLines));
+			myStrategyResult.DeletedLines.setText(Integer.toString(deleteLines));
+			myStrategyResult.BidList.setText(Integer.toString(myAskList.getLength()));
+			myStrategyResult.AskList.setText(Integer.toString(myAskList.getLength()));
+			
+				
+				
 			set.close();
 		} catch (SQLException e) {
 			System.out.println("In Mainmenu/runStrategy : " + e);

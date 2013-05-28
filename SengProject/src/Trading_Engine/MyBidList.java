@@ -6,10 +6,12 @@ import java.util.LinkedList;
 public class MyBidList {
 	private LinkedList<OneData> myList;
 	private LinkedList<Long> allID;
+	private int totalError;
 
 	public MyBidList(){
 		myList = new LinkedList<OneData>();
 		allID = new LinkedList<Long>();
+		totalError = 0;
 	}
 
 	public void add(long tmpID, double tmpPrice, int tmpVol, Time tmpTime) {
@@ -65,6 +67,8 @@ public class MyBidList {
 		int updateIndex = allID.indexOf(tmpID);
 		if(updateIndex != -1){
 			myList.get(updateIndex).updateValue(tmpID,tmpPrice,tmpVol,tmpTime);
+		}else{
+			totalError++;
 		}
 	}
 
@@ -73,6 +77,8 @@ public class MyBidList {
 		if(deleteIndex != -1){
 			myList.remove(deleteIndex);
 			allID.remove(deleteIndex);
+		}else{
+			totalError++;
 		}
 	}
 	
@@ -83,5 +89,9 @@ public class MyBidList {
 
 	public void updateFirst(long tmpID, double tmpPrice, int tmpVol, Time tmpTime) {
 		myList.get(0).updateValue(tmpID,tmpPrice,tmpVol,tmpTime);
+	}
+
+	public int getError() {
+		return totalError;
 	}
 }

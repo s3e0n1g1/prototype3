@@ -21,10 +21,14 @@ import org.jfree.ui.RefineryUtilities;
 
 
 public class LineGraph extends JPanel{
+	private static XYSeries series1;
     private static XYSeries series2;
+    private static XYSeries series3;
     private String title;
     public LineGraph(final String title) {
-    	series2 = new XYSeries("Input");
+    	series1 = new XYSeries("Trade");
+    	series2 = new XYSeries("Bid");
+    	series3 = new XYSeries("Ask");
     	this.title = title;
     }
     
@@ -33,7 +37,7 @@ public class LineGraph extends JPanel{
     	//createFakeDataset();
     	final JFreeChart chart = createChart(getDataset());
         final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(500, 350));
+        chartPanel.setPreferredSize(new java.awt.Dimension(650, 400));
         add(chartPanel);
     }
     
@@ -73,9 +77,9 @@ public class LineGraph extends JPanel{
     */
     public XYDataset getDataset() {
         final XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(new XYSeries("Day 1"));
+        dataset.addSeries(series1);
         dataset.addSeries(series2);
-        dataset.addSeries(new XYSeries("Day 3"));      
+        dataset.addSeries(series3);      
         return dataset;
     }
     
@@ -85,7 +89,7 @@ public class LineGraph extends JPanel{
         final JFreeChart chart = ChartFactory.createXYLineChart(
             title,   // title
             "Time",                           // x axis label
-            "Return",                          // y axis label
+            "Price",                          // y axis label
             dataset,                  // data
             PlotOrientation.VERTICAL,
             false,                     // include legend
@@ -101,8 +105,17 @@ public class LineGraph extends JPanel{
         final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesLinesVisible(0, false);
         renderer.setSeriesShapesVisible(1, false);
+        renderer.setSeriesShapesVisible(2, false);
         plot.setRenderer(renderer);
             
         return chart;       
     }
+
+	public static void addToDataset2(double finishTime, float tmpPrice) {
+		series1.add(finishTime, tmpPrice);
+	}
+
+	public static void addToDataset3(double finishTime, float tmpPrice) {
+		series3.add(finishTime, tmpPrice);
+	}
 }

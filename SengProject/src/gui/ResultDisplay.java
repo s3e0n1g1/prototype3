@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,7 +48,7 @@ public class ResultDisplay extends JFrame {
 		JTabbedPane jtb = new JTabbedPane();
 		Container con = this.getContentPane(); 
 		con.add(jtb);
-		
+
 		setTitle(frametitle); 
 		setSize(800,600);
 		setLocationRelativeTo(null);
@@ -108,20 +109,20 @@ public class ResultDisplay extends JFrame {
 		JPanel analysispanel = new JPanel();
 		JPanel panel = new JPanel();
 		JPanel panel2 = new JPanel();
-		
+
 		Dimension d = new Dimension(150,100);
 		panel.setLayout((new BoxLayout(panel, BoxLayout.PAGE_AXIS)));
-		
+
 		panel.setSize(d);
 		panel.setPreferredSize(d);
 		panel.setMaximumSize(d);
-		
+
 		panel2.setLayout((new BoxLayout(panel2, BoxLayout.PAGE_AXIS)));
 		panel2.setSize(d);
 		panel2.setPreferredSize(d);
 		panel2.setMaximumSize(d);
-		
-		
+
+
 		LinesRead = new JLabel("lines read");
 		MatchedLines = new JLabel("matched");
 		UpdatedLines = new JLabel("updated");
@@ -142,26 +143,26 @@ public class ResultDisplay extends JFrame {
 		panel2.add(DeletedLines);
 		panel2.add(BidList);
 		panel2.add(AskList);
-		
+
 		analysispanel.add(panel);
 		analysispanel.add(panel2);
-		
+
 		toppanel.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
-		
+
 		c.fill = GridBagConstraints.VERTICAL;
 		c.weightx = 1;
 		c.gridx = 0;
 		c.gridy = 0;	
 		analysispanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-		
+
 		toppanel.add(analysispanel,c);
 		c.fill = GridBagConstraints.VERTICAL;
 		c.weightx = 2;
 		c.gridx = 1;
 		c.gridy = 0;
 		toppanel.add(new JPanel(),c);
-		
+
 		return toppanel;
 	}
 
@@ -170,37 +171,47 @@ public class ResultDisplay extends JFrame {
 	private JPanel orderbookPanel() {
 		JPanel panel = new JPanel();
 		ordertable = new OrderbookTable();
-		
+
 		//Date date= null;
-		
+
 		JTable buybook = new JTable();
 
 		buybook.setModel(ordertable);
 		/*
 		String originaltimestamp = "2010-07-14 09:00:02";
 		String timestamp = new SimpleDateFormat("HH:mm").format(date); // 9:00
-				
+
 		try {
 			date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(originaltimestamp);
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		*/
-		System.out.println("sdfsdfsd");
-		Object [] fakedata1 = {123,245, "$ " + Double.toString(new Double(5.30)), new Integer(43), "9:00"};
-		
-		ordertable.addElement(fakedata1);
-		ordertable.addElement(fakedata1);
-		ordertable.addElement(fakedata1);
-		ordertable.addElement(fakedata1);
+		 */
+		//System.out.println("sdfsdfsd");
+		try {
+			ResultSet set = myDB.getResultSet("SELECT * FROM old_trade_list;");
+			while(set.next()){
+				long bidID = set.getLong(12);
+				long askID = set.getLong(13);
+				float tmpPrice = set.getFloat(6);
+				int tmpVol = set.getInt(7);
+				Time tmpTime = set.getTime(3);
+				Object [] fakedata1 = {bidID,askID, "$ " + tmpPrice, tmpVol, tmpTime};
+				ordertable.addElement(fakedata1);
+			};
+			set.close();
+		}catch (SQLException e) {
+			System.out.println("In Mainmenu/insertTables : " + e);
+		}
 
-		Dimension d = new Dimension (500,150);
+
+		Dimension d = new Dimension (650,500);
 
 		JScrollPane scrollTable = new JScrollPane(buybook);
 		buybook.setFillsViewportHeight(true);
 		scrollTable.setPreferredSize(d);
 		scrollTable.setMaximumSize(d);	
-		
+
 		panel.add(scrollTable);
 		return panel;
 	}
@@ -209,27 +220,50 @@ public class ResultDisplay extends JFrame {
 
 		JPanel panel = new JPanel();
 		JPanel graphpanel = new JPanel();
-		
+
 		panel.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 
 		//create new graph and data set
 		LineGraph returntimegraph = new LineGraph("Trades without Matching");
 		//add plots to the graph
-		LineGraph.addToDataset(200.0, 1.2);
-		LineGraph.addToDataset(230.0, 1.3);
-		LineGraph.addToDataset(300.0, 1.4);
-		LineGraph.addToDataset(400.0, 3.2);
-		LineGraph.addToDataset(810.0, 2.3);
-		LineGraph.addToDataset(240.0, 4.3);
-		LineGraph.addToDataset(546.0, 4.6);
+		try {
+			ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
+			String tmp;
+			String tmpType;
+			while(set.next()){
+				tmp = set.getString(5);
+				if(tmp.equalsIgnoreCase("ENTER")){
+					tmpType = set.getString(14);
+					float tmpPrice = set.getFloat(6);
+					Time tmpTime = set.getTime(3);
+					double finishTime = tmpTime.getHours() + (tmpTime.getMinutes()/60.0);
+					//System.out.println("finishTime: " + finishTime + " = " + tmpTime.getHours() + " + " + (tmpTime.getMinutes()/60.0));
+					if(tmpType.equalsIgnoreCase("B")){
+						LineGraph.addToDataset(finishTime, tmpPrice);
+					}else if(tmpType.equalsIgnoreCase("A")){
+						LineGraph.addToDataset3(finishTime, tmpPrice);
+					}
+				}else if (tmp.equalsIgnoreCase("TRADE")){
+					float tmpPrice = set.getFloat(6);
+					Time tmpTime = set.getTime(3);
+					double finishTime = tmpTime.getHours() + (tmpTime.getMinutes()/60.0);
+					LineGraph.addToDataset2(finishTime, tmpPrice);
+				}
+			};
+			set.close();
+		}catch (SQLException e) {
+			System.out.println("In Mainmenu/insertGraph : " + e);
+		}
+
+		//LineGraph.addToDataset(546.0, 4.6);
 		//loop through database
-		
+
 		//finalise dataset for graph
 		returntimegraph.finishGraph();
 		returntimegraph.setVisible(true);
 		graphpanel.add(returntimegraph);
-		
+
 		//Configurations for graph, not sure if can be done
 
 		JPanel config = new JPanel();
@@ -249,7 +283,7 @@ public class ResultDisplay extends JFrame {
 		c.fill = GridBagConstraints.VERTICAL;
 		c.weightx = 2;
 		//panel.add(config);  <--- uncomment to display on gui
-			
+
 		return panel;
 	}
 	private StrategySelected myStrategyResult; 
@@ -372,7 +406,7 @@ public class ResultDisplay extends JFrame {
 			System.out.println("In Mainmenu/runStrategy : " + e);
 		}
 	}
-	
+
 	//IMPLEMENT TRADING STRATEGY HERE
 	protected void runNewStrategy() {
 		try {
@@ -400,7 +434,7 @@ public class ResultDisplay extends JFrame {
 				tmpType = set.getString(14);
 				tmpTime = set.getTime(3);
 				if(tmp.equalsIgnoreCase("ENTER")){
-					tmpPrice = set.getDouble(6);
+					tmpPrice = set.getFloat(6);
 					tmpVol = set.getInt(7);
 					if(tmpType.equalsIgnoreCase("B")){
 						tmpID = set.getLong(12);
@@ -414,15 +448,14 @@ public class ResultDisplay extends JFrame {
 
 				}else if (tmp.equalsIgnoreCase("AMEND")){
 					updateLines++;
-					tmpPrice = set.getLong(12);
+					tmpPrice = set.getFloat(6);
 					tmpVol = set.getInt(7);
 					if(tmpType.equalsIgnoreCase("B")){
 						tmpID = set.getLong(12);
 						myBidList.update(tmpID,tmpPrice,tmpVol,tmpTime);
-
 					}else if(tmpType.equalsIgnoreCase("A")){
 						tmpID = set.getLong(13);
-
+						myAskList.update(tmpID,tmpPrice,tmpVol,tmpTime);
 					}
 				}else if (tmp.equalsIgnoreCase("DELETE")){
 					deleteLines++;
@@ -431,7 +464,7 @@ public class ResultDisplay extends JFrame {
 						myBidList.deleteOne(tmpID);
 					}else if(tmpType.equalsIgnoreCase("A")){
 						tmpID = set.getLong(13);
-
+						myAskList.deleteOne(tmpID);
 					}
 				}
 				count++;
@@ -441,9 +474,11 @@ public class ResultDisplay extends JFrame {
 			Mainmenu.console.append("Total lines matched : " + completedTrade.size() + "\n");
 			Mainmenu.console.append("Total lines update : " + updateLines + "\n");
 			Mainmenu.console.append("Total lines delete : " + deleteLines + "\n");
+			Mainmenu.console.append("Total Bid Error : " + myBidList.getError() + " Total Ask Error: " 
+					+ myAskList.getError()+ "\n");
 			Mainmenu.console.append("bid list contains " +  myBidList.getLength() + ".\n");
 			Mainmenu.console.append("ask list contains " +  myAskList.getLength() + ".\n");
-			
+
 			//update jlabels
 			myStrategyResult.LinesRead.setText(Integer.toString( count));
 			myStrategyResult.MatchedLines.setText(Integer.toString(completedTrade.size()));
@@ -451,9 +486,9 @@ public class ResultDisplay extends JFrame {
 			myStrategyResult.DeletedLines.setText(Integer.toString(deleteLines));
 			myStrategyResult.BidList.setText(Integer.toString(myAskList.getLength()));
 			myStrategyResult.AskList.setText(Integer.toString(myAskList.getLength()));
-			
-				
-				
+
+
+
 			set.close();
 		} catch (SQLException e) {
 			System.out.println("In Mainmenu/runStrategy : " + e);

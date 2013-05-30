@@ -61,7 +61,6 @@ public class StrategySelected extends JFrame {
 		bidFirstList = allFirstBidList;
 		strategyAsk = allStraAsk;
 		strategyBid = allStraBid;
-		//myDB = db;
 		JTabbedPane jtb = new JTabbedPane();
 		Container con = this.getContentPane(); 
 		con.add(jtb);
@@ -82,7 +81,8 @@ public class StrategySelected extends JFrame {
 		setJMenuBar(menubar);
 
 		jtb.addTab("Analysis", analysisPanel());
-		jtb.addTab("Orderbook", orderbookPanel());
+		jtb.addTab("All Trades", orderbookPanel());
+		jtb.addTab("Strategy Trades", strategyTradePanel());
 		jtb.addTab("Strategy Graph", graphPanel());
 		jtb.addTab("Best Price Graph", graphPanelLines());
 
@@ -178,6 +178,8 @@ public class StrategySelected extends JFrame {
 	}
 
 	private OrderbookTable ordertable;
+	
+	private OrderbookTableNew strategyTable;
 
 	private JPanel orderbookPanel() {
 		JPanel panel = new JPanel();
@@ -191,6 +193,40 @@ public class StrategySelected extends JFrame {
 					"$ " + allCompletedTrade.get(i).getPrice(), allCompletedTrade.get(i).getVol()
 					, allCompletedTrade.get(i).getTime()};
 			ordertable.addElement(fakedata1);
+		}
+
+
+		Dimension d = new Dimension (650,500);
+
+		JScrollPane scrollTable = new JScrollPane(buybook);
+		buybook.setFillsViewportHeight(true);
+		scrollTable.setPreferredSize(d);
+		scrollTable.setMaximumSize(d);	
+
+		panel.add(scrollTable);
+		return panel;
+	}
+
+	private JPanel strategyTradePanel() {
+		JPanel panel = new JPanel();
+		strategyTable = new OrderbookTableNew();
+
+		JTable buybook = new JTable();
+		buybook.setModel(strategyTable);
+
+		for(int i = 0; i < allCompletedTrade.size(); i++){
+			if(allCompletedTrade.get(i).getBuyID() < 0){
+				Object [] fakedata1 = {allCompletedTrade.get(i).getBuyID(),allCompletedTrade.get(i).getAskID(),
+						"$ " + allCompletedTrade.get(i).getPrice(), allCompletedTrade.get(i).getVol()
+						, allCompletedTrade.get(i).getTime(),0};
+				strategyTable.addElement(fakedata1);
+			}else if(allCompletedTrade.get(i).getAskID() < 0){
+				double tmpProfit = (allCompletedTrade.get(i).getPrice() - allCompletedTrade.get(i-1).getPrice())/allCompletedTrade.get(i).getPrice();
+				Object [] fakedata1 = {allCompletedTrade.get(i).getBuyID(),allCompletedTrade.get(i).getAskID(),
+						"$ " + allCompletedTrade.get(i).getPrice(), allCompletedTrade.get(i).getVol()
+						, allCompletedTrade.get(i).getTime(),tmpProfit};
+				strategyTable.addElement(fakedata1);
+			}
 		}
 
 

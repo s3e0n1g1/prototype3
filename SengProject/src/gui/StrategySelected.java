@@ -81,7 +81,8 @@ public class StrategySelected extends JFrame {
 
 		setVisible(true);
 	}
-
+	public JLabel Strategy;
+	public JLabel Threshold;
 	public JLabel LinesRead;
 	public JLabel MatchedLines;
 	public JLabel UpdatedLines;
@@ -107,7 +108,8 @@ public class StrategySelected extends JFrame {
 		panel2.setPreferredSize(d);
 		panel2.setMaximumSize(d);
 		
-		
+		Strategy = new JLabel("strategy");
+		Threshold = new JLabel(Integer.toString(ResultDisplay.Threshold));
 		LinesRead = new JLabel("lines read");
 		MatchedLines = new JLabel("matched");
 		UpdatedLines = new JLabel("updated");
@@ -115,13 +117,19 @@ public class StrategySelected extends JFrame {
 		BidList = new JLabel("total text");
 		AskList = new JLabel("tradelines text");
 		
+		panel.add(new JLabel("Strategy selected:"));
+		panel.add(new JLabel("Threshold entered:"));
 		panel.add(new JLabel("Total lines read:"));
-		panel.add(new JLabel("Total lines matched:"));	
-		panel.add(new JLabel("Total lines update:"));	
-		panel.add(new JLabel("Total lines deleted:"));
-		panel.add(new JLabel("Bid list contains"));	
-		panel.add(new JLabel("Ask list contains"));
+		panel.add(new JLabel("Number of MATCH:"));	
+		panel.add(new JLabel("Number of AMEND:"));	
+		panel.add(new JLabel("Number of DELETE:"));
+		panel.add(new JLabel("Number of Bids:"));	
+		panel.add(new JLabel("Number of Asks:"));
 
+		Strategy.setText(ResultDisplay.Strategy);
+		
+		panel2.add(Strategy);
+		panel2.add(Threshold);
 		panel2.add(LinesRead);
 		panel2.add(MatchedLines);
 		panel2.add(UpdatedLines);

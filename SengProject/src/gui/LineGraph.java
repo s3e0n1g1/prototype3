@@ -92,7 +92,7 @@ public class LineGraph extends JPanel{
             "Price",                          // y axis label
             dataset,                  // data
             PlotOrientation.VERTICAL,
-            false,                     // include legend
+            true,                     // include legend
             true,                     // tooltips
             false                     // urls
         );

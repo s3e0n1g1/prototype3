@@ -53,7 +53,10 @@ public class ResultDisplay extends JFrame {
 	private XYSeries series1;
 	private XYSeries series2;
 	private XYSeries series3;
+	public static int Threshold = 5;
+	public static String Strategy;
 	public ResultDisplay(String frametitle, myDatabase db, LinkedList<String> result){
+		final JFrame display = this;
 		overviewResult = result;
 		series1 = new XYSeries("Trade");
 		series2 = new XYSeries("Bid");
@@ -78,10 +81,10 @@ public class ResultDisplay extends JFrame {
 		file.add(quit);
 
 		JMenu strategy = new JMenu("Strategy");
-		JMenuItem momstrategy = new JMenuItem("Run Momentum Strategy");
-		JMenuItem revstrategy = new JMenuItem("Run Momentum Reversion Strategy");
+		JMenuItem momstrategy = new JMenuItem("Run a Strategy");
+		//JMenuItem revstrategy = new JMenuItem("Run Momentum Reversion Strategy");
 		strategy.add(momstrategy);
-		strategy.add(revstrategy);
+		//strategy.add(revstrategy);
 		menubar.add(strategy);
 		setJMenuBar(menubar);
 
@@ -100,12 +103,21 @@ public class ResultDisplay extends JFrame {
 				new ActionListener() {
 					public void actionPerformed(ActionEvent event) {	
 						//open new frame for strategy analysis
+						ChooseStrategy strat = new ChooseStrategy(display);
+						if (strat.run == true) {
+							Strategy = strat.getStrategy();
+							Threshold = strat.getThreshold();
+							myStrategyResult = new StrategySelected();
+							myStrategyResult.setVisible(true);
+							if (strat.getStrategy() == "Momentum") {
+								//momentum
+								runNewStrategy();
+							} else if (strat.getStrategy() == "Mean Reversion"){
+								//mean
+								runNewStrategy();
+							}					
+						}
 
-						myStrategyResult = new StrategySelected();
-						myStrategyResult.setVisible(true);
-						//run strategy to update the new frame's table
-						//include all data changes here, i.e graph	
-						runNewStrategy();
 					}
 				}
 				);	
@@ -327,6 +339,7 @@ public class ResultDisplay extends JFrame {
 
 		return panel;
 	}
+
 	private StrategySelected myStrategyResult; 
 	protected void runStrategy() {
 		try {

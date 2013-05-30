@@ -35,6 +35,7 @@ public class Mainmenu extends JFrame{
 	public static myDatabase myDB;
 	private ResultDisplay myResult;
 	public Mainmenu(myDatabase db, Result result) { 
+		final JFrame frame = this;
 		setTitle("Algorithmic Trading System"); 
 		setSize(800,600);
 		setLocationRelativeTo( null );
@@ -53,9 +54,9 @@ public class Mainmenu extends JFrame{
 		file.add(loadcsv);
 		file.add(quit);
 		JMenu help = new JMenu("Help");		
-		JMenuItem about = new JMenuItem("About");
+		//JMenuItem about = new JMenuItem("About");
 		JMenuItem howtouse = new JMenuItem("How To Use");
-		help.add(about);
+		//help.add(about);
 		help.add(howtouse);
 
 		menubar.add(help);
@@ -63,6 +64,13 @@ public class Mainmenu extends JFrame{
 		pane.add(consolePanel(result));
 
 		//pane.setBorder(new EmptyBorder(5, 0, 0, 0) );
+
+		howtouse.addActionListener(
+				new ActionListener() {
+					public void actionPerformed(ActionEvent event){
+						JDialog help = new helpDialog(frame);
+					}
+				});
 
 
 		loadcsv.addActionListener(
@@ -80,7 +88,7 @@ public class Mainmenu extends JFrame{
 							}
 							myResult.setVisible(true);
 							//runNewStrategy();
-						
+
 							//String tmp = myDB.getRowCount();
 							//console.append(tmp);
 							console.append("CSV loaded.\nPlease select a strategy.\n");
@@ -88,12 +96,12 @@ public class Mainmenu extends JFrame{
 					}
 				});
 
-	       quit.addActionListener(new ActionListener() {
-	           public void actionPerformed(ActionEvent event) {
-					myDB.closeDatabase();
-					System.exit(0);
-	          }
-	       });
+		quit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				myDB.closeDatabase();
+				System.exit(0);
+			}
+		});
 
 		addWindowListener(new WindowAdapter(){
 			@Override
@@ -102,10 +110,38 @@ public class Mainmenu extends JFrame{
 				System.exit(0);
 			}
 		});
-
 		setVisible(true);	
 	}
-	
+
+	class helpDialog extends JDialog {
+		public helpDialog(JFrame frame) {
+			super (frame, false);
+			JDialog help = new JDialog(frame, false);
+			JPanel panel = new JPanel();
+			getContentPane().add(panel);
+			setResizable(false);
+			setLocationRelativeTo(frame);
+			setSize(400,220);
+			setTitle("Help");
+			JTextArea text = new JTextArea ("To open a CSV file, click File - Load a CSV. To run a strategy, a CSV file musted be selected. " +
+					"A new window will open including new buttons to select your strategy. The console area will display the list of returns based on the result time after running a strategy. Visual and table aid can be found in the following window.");
+			text.setLineWrap(true);
+			text.setWrapStyleWord(true);
+			text.setEditable(false);
+			text.setMargin(new Insets(15,15,15,15));
+			panel.add(text);
+			text.setPreferredSize(new Dimension( 350,150));
+			JButton ok = new JButton ("Close");
+			panel.add(ok);
+			
+			ok.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					setVisible(false);
+				}
+			});
+			setVisible(true);
+		}
+	}
 	private JScrollPane consolePanel (Result result){
 		console = new JTextArea("");
 		console.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -198,9 +234,9 @@ public class Mainmenu extends JFrame{
 			Mainmenu.console.append("Total lines delete : " + deleteLines + "\n");
 			Mainmenu.console.append("bid list contains " +  myBidList.getLength() + ".\n");
 			Mainmenu.console.append("ask list contains " +  myAskList.getLength() + ".\n");
-			
-			
-			
+
+
+
 			//update jlabels
 			//myResult.LinesRead.setText(Integer.toString( count));
 			//myResult.enterLines.setText(Integer.toString(completedTrade.size()));
@@ -208,10 +244,10 @@ public class Mainmenu extends JFrame{
 			//myResult.bidLines.setText(Integer.toString(deleteLines));
 			//myResult.tradeLines.setText(Integer.toString(myAskList.getLength()));
 			//myResult.AskList.setText(Integer.toString(myAskList.getLength()));
-			
-			
+
+
 			//ReturnCalculated.setText("212"); //to change value of labels
-						
+
 			set.close();
 		} catch (SQLException e) {
 			System.out.println("In Mainmenu/runStrategy : " + e);
@@ -277,5 +313,5 @@ public class Mainmenu extends JFrame{
 		}
 
 	}
-	
+
 }

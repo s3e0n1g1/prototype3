@@ -2,7 +2,6 @@ package New;
 import java.util.LinkedList;
 import java.lang.Math;
 import Trading_Engine.ResultData;
-import Selecting_Algothrim.signalObject;
 import Trading_Engine.MyAskList;
 import Trading_Engine.MyBidList;
 

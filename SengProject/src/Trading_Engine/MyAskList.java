@@ -31,19 +31,20 @@ public class MyAskList {
 
 	private int getPosToInsert(double tmpPrice, int bot, int top) {
 		int result = 0;
+		int midIndex = ((top-bot)/2) + bot;
 		if(bot+1 == top){
-			if(tmpPrice >= myList.get(bot).getPrice() & tmpPrice < myList.get(top).getPrice()){
-				result = top;
-			}else if(tmpPrice < myList.get(bot).getPrice()){
+			if(tmpPrice < myList.get(bot).getPrice()){
 				result = bot;
+			}else if(tmpPrice < myList.get(top).getPrice()){
+				result = top;
 			}else if(tmpPrice >= myList.get(top).getPrice()){
 				result = top+1;
 			}
-		}else if(tmpPrice < myList.get(((top-bot)/2) + bot).getPrice()){
-			result = getPosToInsert(tmpPrice,bot,((top-bot)/2) + bot);
-		}else if(tmpPrice >= myList.get(((top-bot)/2) + bot).getPrice()){
+		}else if(tmpPrice < myList.get(midIndex).getPrice()){
+			result = getPosToInsert(tmpPrice,bot,midIndex);
+		}else if(tmpPrice >= myList.get(midIndex).getPrice()){
 			//System.out.println("getPosToInsert(" + tmpPrice + ", " +(((top-bot)/2) + bot) + ", " + top + ")");
-			result = getPosToInsert(tmpPrice,((top-bot)/2) + bot,top);
+			result = getPosToInsert(tmpPrice,midIndex,top);
 		}
 
 		return result;
@@ -66,7 +67,12 @@ public class MyAskList {
 	public void update(long tmpID, double tmpPrice, int tmpVol, Time tmpTime) {
 		int updateIndex = allID.indexOf(tmpID);
 		if(updateIndex != -1){
-			myList.get(updateIndex).updateValue(tmpID,tmpPrice,tmpVol,tmpTime);
+			if(tmpPrice != myList.get(updateIndex).getPrice()){
+				deleteAtIndex(updateIndex);
+				add(tmpID,tmpPrice,tmpVol,tmpTime);
+			}else{
+				myList.get(updateIndex).updateValue(tmpID,tmpPrice,tmpVol,tmpTime);
+			}
 		}else{
 			totalError++;
 		}

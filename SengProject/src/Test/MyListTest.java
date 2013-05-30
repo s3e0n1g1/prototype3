@@ -92,4 +92,32 @@ public class MyListTest {
 		Assert.assertEquals("Error in insert!",Time.valueOf("13:00:00"), myAskList.get(7).getTime());
 		//myAskList.printAll();
 	}
+	
+	/*
+	float tmpBidPrice1;
+	float tmpBidPrice2;
+	for(int i = 1; i < myBidList.getLength();i++){
+		tmpBidPrice1 = myBidList.get(i-1).getPrice();
+		tmpBidPrice2 = myBidList.get(i).getPrice();
+		if(tmpBidPrice1 >= tmpBidPrice2){
+			
+		}else{
+			System.out.println("------------error in insertion Sort BidList " + tmpBidPrice1 + " >= " + tmpBidPrice2);
+			//myBidList.printAll();
+		}
+	}
+	float tmpAskPrice1;
+	float tmpAskPrice2;
+	for(int i = 1; i < myAskList.getLength();i++){
+		tmpAskPrice1 = myAskList.get(i-1).getPrice();
+		tmpAskPrice2 = myAskList.get(i).getPrice();
+		if(tmpAskPrice1 <= tmpAskPrice2){
+			
+		}else{
+			System.out.println("------------error in insertion Sort AskList " + tmpAskPrice1 + " <= " + tmpAskPrice2);
+			//myAskList.printAll();
+		}
+	}
+	
+	*/
 }

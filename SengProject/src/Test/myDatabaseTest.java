@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,14 +48,14 @@ public class myDatabaseTest {
 			ResultSet result1 = myTestDB.getResultSet("SELECT * FROM all_list;");
 			br.readLine();
 			String st,stmp = "";
-			float tmp1,tmp2 = 0;
+			double tmp1,tmp2 = 0;
 			while ((st=br.readLine())!=null && result1.next()){
 				String[] insertElement = st.split(",");
 				stmp = result1.getString(5);
 				Assert.assertEquals("Error in br.type == result1.type!", stmp, insertElement[3]);
 				if(insertElement[3].equalsIgnoreCase("ENTER")){
-					tmp1 = Float.parseFloat(insertElement[4]);
-					tmp2 = result1.getFloat(6);
+					tmp1 = Double.parseDouble(insertElement[4]);
+					tmp2 = result1.getDouble(6);
 					//System.out.println("x" + tmp1 + " == " + tmp2 + "x");
 					Assert.assertEquals("Error in st == result1!", tmp1, tmp2, 0.001);
 				}

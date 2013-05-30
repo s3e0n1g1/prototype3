@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.sql.Time;
 
 import New.*;
-import Selecting_Algothrim.signalObject;
 import Trading_Engine.*;
 import org.junit.Assert;
 import org.junit.Test;
@@ -67,21 +66,13 @@ public class MyStrategyTest {
 			signalList = strategy.generateSignalList(bidList, askList);
 		}
 		long tempcheckingPrice = (long) 5;
-		if(signalList.isEmpty()){
-			System.out.println("signalList1 is empty");
-		}else{
-			Assert.assertEquals("there was a problem with generating Buy signal", tempcheckingPrice, signalList.get(0).getPrice(), 0.001);
-			orderID.add(1L);
-			strategy.getReceiptList(orderID);
-		}
-		strategy.addTrade(8);
+		Assert.assertEquals("there was a problem with generating Buy signal", tempcheckingPrice, signalList.get(0).getPrice(), 0.001);
+		orderID.add(1L);
+		strategy.getReceiptList(orderID);
+		strategy.addTrade(1);
 		signalList = strategy.generateSignalList(bidList, askList);
 		tempcheckingPrice = (long ) 4;
-		if(signalList.isEmpty()){
-			System.out.println("signalList2 is empty");
-		}else{
-			Assert.assertEquals("There is a problem with generating sell Signal", tempcheckingPrice, signalList.get(0).getPrice(), 0.001);
-		}
+		Assert.assertEquals("There is a problem with generating sell Signal", tempcheckingPrice, signalList.get(0).getPrice(), 0.001);
 
 
 

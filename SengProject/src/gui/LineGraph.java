@@ -32,10 +32,15 @@ public class LineGraph extends JPanel{
     	this.title = title;
     }
     
-    public void finishGraph() {
+    public void finishGraph(boolean noLines) {
         //final XYDataset dataset = createDataset();
     	//createFakeDataset();
-    	final JFreeChart chart = createChart(getDataset());
+    	final JFreeChart chart;
+    	if(noLines){
+    		chart= createChart(getDataset(),true);
+    	}else{
+    		chart= createChart(getDataset(),false);
+    	}
         final ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new java.awt.Dimension(650, 400));
         add(chartPanel);
@@ -84,7 +89,7 @@ public class LineGraph extends JPanel{
     }
     
 
-    private JFreeChart createChart(final XYDataset dataset) {
+    private JFreeChart createChart(final XYDataset dataset, boolean noLines) {
         
         final JFreeChart chart = ChartFactory.createXYLineChart(
             title,   // title
@@ -103,19 +108,26 @@ public class LineGraph extends JPanel{
         plot.setRangeGridlinePaint(Color.white);
         
         final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        renderer.setSeriesLinesVisible(0, false);
-        renderer.setSeriesShapesVisible(1, false);
-        renderer.setSeriesShapesVisible(2, false);
+        if(noLines){
+        	renderer.setSeriesLinesVisible(0, false);
+            renderer.setSeriesLinesVisible(1, false);
+            renderer.setSeriesLinesVisible(2, false);
+        }else{
+        	renderer.setSeriesLinesVisible(0, false);
+        	renderer.setSeriesShapesVisible(1, false);
+            renderer.setSeriesShapesVisible(2, false);
+        }
+
         plot.setRenderer(renderer);
             
         return chart;       
     }
 
-	public static void addToDataset2(double finishTime, float tmpPrice) {
+	public static void addToDataset2(double finishTime, double tmpPrice) {
 		series1.add(finishTime, tmpPrice);
 	}
 
-	public static void addToDataset3(double finishTime, float tmpPrice) {
+	public static void addToDataset3(double finishTime, double tmpPrice) {
 		series3.add(finishTime, tmpPrice);
 	}
 

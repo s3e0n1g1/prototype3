@@ -2,9 +2,7 @@ package Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import javax.swing.JTable;
 
-import gui.OrderbookTable;
 import Selecting_Algothrim.*;
 
 import org.junit.Test;

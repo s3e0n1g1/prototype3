@@ -191,25 +191,25 @@ public class Mainmenu extends JFrame{
 				tmpType = set.getString(14);
 				tmpTime = set.getTime(3);
 				if(tmp.equalsIgnoreCase("ENTER")){
-					tmpPrice = set.getDouble(6);
+					tmpPrice = set.getFloat(6);
 					tmpVol = set.getInt(7);
 					if(tmpType.equalsIgnoreCase("B")){
 						tmpID = set.getLong(12);
-						insertBidList(myBidList, myAskList, completedTrade,
-								tmpPrice, tmpVol, tmpID, tmpTime);
+						//insertBidList(myBidList, myAskList, completedTrade,
+								//tmpPrice, tmpVol, tmpID, tmpTime);
 					}else if(tmpType.equalsIgnoreCase("A")){
 						tmpID = set.getLong(13);
-						insertAskList(myBidList, myAskList, completedTrade,
-								tmpPrice, tmpVol, tmpID, tmpTime);
+						//insertAskList(myBidList, myAskList, completedTrade,
+								//tmpPrice, tmpVol, tmpID, tmpTime);
 					}
 
 				}else if (tmp.equalsIgnoreCase("AMEND")){
 					updateLines++;
-					tmpPrice = set.getLong(12);
+					tmpPrice = set.getFloat(6);
 					tmpVol = set.getInt(7);
 					if(tmpType.equalsIgnoreCase("B")){
 						tmpID = set.getLong(12);
-						myBidList.update(tmpID,tmpPrice,tmpVol,tmpTime);
+						//myBidList.update(tmpID,tmpPrice,tmpVol,tmpTime);
 
 					}else if(tmpType.equalsIgnoreCase("A")){
 						tmpID = set.getLong(13);
@@ -253,6 +253,7 @@ public class Mainmenu extends JFrame{
 			System.out.println("In Mainmenu/runStrategy : " + e);
 		}
 	}
+	/*
 	public void insertBidList(MyBidList myBidList, MyAskList myAskList,
 			LinkedList<ResultData> completedTrade, double tmpPrice, int tmpVol,
 			long tmpID, Time tmpTime) {
@@ -314,4 +315,7 @@ public class Mainmenu extends JFrame{
 
 	}
 
+
+
+	*/
 }

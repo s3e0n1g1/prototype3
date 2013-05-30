@@ -133,7 +133,7 @@ public class myDatabase {
 							tableElement[2] + " time, " +
 							"millisecond" + " integer, "+
 							tableElement[3] + " text, " +
-							tableElement[4] + " float, " +
+							tableElement[4] + " double, " +
 							tableElement[5] + " integer, " +
 							tableElement[6] + " integer, " +
 							tableElement[7] + " float, " +
@@ -143,7 +143,7 @@ public class myDatabase {
 							tableElement[11] + " bigint, " +
 							tableElement[12] + " varchar(1), " +
 							tableElement[13] + " time, " +
-							tableElement[14] + " float, " +
+							tableElement[14] + " double, " +
 							tableElement[15] + " integer, " +
 							tableElement[16] + " integer, " +
 							tableElement[17] + " integer ";
@@ -204,9 +204,9 @@ public class myDatabase {
 			pstmt.setInt(4, Integer.parseInt(insertElement[2].substring(9)));
 			pstmt.setString(5, insertElement[3]);
 			if(insertElement[4].isEmpty()){
-				pstmt.setNull(6, java.sql.Types.FLOAT);
+				pstmt.setNull(6, java.sql.Types.DOUBLE);
 			}else {
-				pstmt.setFloat(6, Float.parseFloat(insertElement[4]));
+				pstmt.setDouble(6, Double.parseDouble(insertElement[4]));
 			}
 			if(insertElement[5].isEmpty()){
 				pstmt.setNull(7, java.sql.Types.INTEGER);
@@ -280,12 +280,12 @@ public class myDatabase {
 			}
 			if(lengthOfArray > 14){
 				if(insertElement[14].isEmpty()){
-					pstmt.setNull(16, java.sql.Types.FLOAT);
+					pstmt.setNull(16, java.sql.Types.DOUBLE);
 				}else {
-					pstmt.setFloat(16, Float.parseFloat(insertElement[14]));
+					pstmt.setDouble(16, Double.parseDouble(insertElement[14]));
 				}
 			}else {
-				pstmt.setNull(16, java.sql.Types.FLOAT);
+				pstmt.setNull(16, java.sql.Types.DOUBLE);
 			}
 			if(lengthOfArray > 15){
 				if(insertElement[15].isEmpty()){

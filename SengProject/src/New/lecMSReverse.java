@@ -1,14 +1,13 @@
 package New;
 
-import java.sql.Time;
 import java.util.LinkedList;
 import java.lang.Math;
 
-import Selecting_Algothrim.signalObject;
 import Trading_Engine.MyAskList;
 import Trading_Engine.MyBidList;
 import Trading_Engine.ResultData;
 
+import java.sql.Time;
 
 public class lecMSReverse implements lecMS {
 
@@ -48,7 +47,9 @@ public class lecMSReverse implements lecMS {
 		// take Average only when arrayIsFull
 		if ( arrayIsFull){
 			lastAverage = average;
-			for ( int i = 0 ; i <= SIZE_OF_ARRAY ; i++ ){
+			average = 0;
+			for ( int i = 0 ; i < SIZE_OF_ARRAY ; i++ ){
+				System.out.println(i + " value: " + tenArray[i]);
 				average += tenArray[i]; 
 			}
 			average = average/10;
@@ -69,7 +70,7 @@ public class lecMSReverse implements lecMS {
 		
 		if ( arrayIsFull == true){  // fill the list if only there arrayIsfull
 			if ( mode == BUY_MODE){ // if we have to buy
-				if (this.averageChange <  (-epsilon) ){
+				if (this.averageChange >  epsilon ){
 					// we put buy sell here
 					requestHappened = true;// for later checking to see if we need to swap
 					
@@ -100,7 +101,7 @@ public class lecMSReverse implements lecMS {
 				// which means we are not adding anything to the signal Object list that we want to buy
 				
 			}else if ( mode == SELL_MODE){// if we have to Sell
-				if ( this.averageChange >  epsilon){// if average decrease than an ofshore
+				if ( this.averageChange <  (-epsilon)){// if average decrease than an ofshore
 					requestHappened = true;
 					// to change to reverse we have to change here
 					
@@ -201,82 +202,77 @@ public class lecMSReverse implements lecMS {
 	private double[] tenArray = new double[10];
 	private  boolean recording;
 	private int counting;
-	private static final int SIZE_OF_ARRAY = 9;
+	private static final int SIZE_OF_ARRAY = 10;
 	private boolean arrayIsFull;
 	private static final int SELL_MODE = 1;
 	private static final int BUY_MODE = -1;
 	private  double epsilon = 0.001;
-	
+	private double epsilonPrice = 0.0002;
 	private LinkedList<CoupleReciept> listOfAllReciept = new LinkedList<CoupleReciept>();
 
+	// NEW ADDED PART    week 12
+	long tempTime;// for calculation of time
+	long tempTime2;
+	Time tempAverageTime; 
+	double outComePercentage;
+	double tempDebit;
+	double tempCredit;
+	int tempNumberOfTrades;// this is for the reason of getting average time of trades
+	LinkedList<resultObjectL> listOfResultsFromTrade = new LinkedList<resultObjectL>();
+	//////////////////
+	
+	
 	private CoupleReciept tempCR;
 
 	
-	// NEW ADDED PART    week 12
-		long tempTime;// for calculation of time
-		long tempTime2;
-		Time tempAverageTime; 
-		double outComePercentage;
-		double tempDebit;
-		double tempCredit;
-		int tempNumberOfTrades;// this is for the reason of getting average time of trades
-		LinkedList<resultObjectL> listOfResultsFromTrade = new LinkedList<resultObjectL>();
 	
+	
+	/// NEW methode
+	public void getSTrade( LinkedList< ResultData> listOfTrades){
 		
+		//ResultData tempRD;
 		
-		
-		
-		
-		
-		
-
-		/// NEW methode
-		public void getSTrade( LinkedList< ResultData> listOfTrades){
-			
-			//ResultData tempRD;
-			
-			if ( mode == BUY_MODE ){// means these trades are because of our Buy
-				tempTime  = 0;
-				tempDebit = 0;
-				tempNumberOfTrades = 0;
-				for ( ResultData tempRD : listOfTrades){
-					tempDebit += tempRD.getPrice();
-					tempTime += tempRD.getTime().getTime();
-				}
-				tempNumberOfTrades = listOfTrades.size();
-			}else if ( mode == SELL_MODE){
-				tempCredit = 0;
-				for ( ResultData tempRD : listOfTrades){
-					tempCredit += tempRD.getPrice();
-					tempTime += tempRD.getTime().getTime();
-				}
-				// when we sell couple gets complete
-				tempNumberOfTrades += listOfTrades.size();
-				tempTime2 = (long) tempTime/tempNumberOfTrades;
-				tempAverageTime = new Time(tempTime2);
-				outComePercentage = ((tempCredit - tempDebit)*2)/(tempCredit + tempDebit);
-				listOfResultsFromTrade.add(new resultObjectL(  tempAverageTime, outComePercentage));
+		if ( mode == BUY_MODE ){// means these trades are because of our Buy
+			tempTime  = 0;
+			tempDebit = 0;
+			tempNumberOfTrades = 0;
+			for ( ResultData tempRD : listOfTrades){
+				tempDebit += tempRD.getPrice();
+				tempTime += tempRD.getTime().getTime();
 			}
-			else{
-				System.out.println("There is a problem on getSTrade Methode on LecMSMomentum");
+			tempNumberOfTrades = listOfTrades.size();
+		}else if ( mode == SELL_MODE){
+			tempCredit = 0;
+			for ( ResultData tempRD : listOfTrades){
+				tempCredit += tempRD.getPrice();
+				tempTime += tempRD.getTime().getTime();
 			}
-			
-			
-			
-			
-			
-			
+			// when we sell couple gets complete
+			tempNumberOfTrades += listOfTrades.size();
+			tempTime2 = (long) tempTime/tempNumberOfTrades;
+			tempAverageTime = new Time(tempTime2);
+			outComePercentage = (tempCredit - tempDebit)/(tempCredit );
+			listOfResultsFromTrade.add(new resultObjectL(  tempAverageTime, outComePercentage));
+		}
+		else{
+			System.out.println("There is a problem on getSTrade Methode on LecMSMomentum");
 		}
 		
-		/**
-		 * it's also for double checking
-		 */
+		
+		
+		
+		
+		
+	}
+	/**
+	 * it's also for double checking
+	 */
 	public LinkedList< resultObjectL> getResultListFromStrategy(){
 		return listOfResultsFromTrade;
 	}
-		
-		
-		
+	
+	
+	
 	public LinkedList<signalObject> generateSignalList(MyBidList myBidList,
 			MyAskList myAskList) {
 
@@ -293,13 +289,13 @@ public class lecMSReverse implements lecMS {
 		if ( arrayIsFull == true){  // fill the list if only there arrayIsfull
 			
 			if ( mode == BUY_MODE){ // if we have to buy
-				if (this.averageChange >  epsilon ){
+				if (this.averageChange <  (-epsilon) ){
 					// we put buy sell here
 					requestHappened = true;// for later checking to see if we need to swap
 					
 					while ( this.shareQuantityLeft > 0){
 						if (myBidList.get(0).getPrice() >= myAskList.get(countingSellList).getPrice() ){
-							tempPrice = myBidList.get(0).getPrice() + this.epsilon; // what is wrong in here
+							tempPrice = myBidList.get(0).getPrice() + this.epsilonPrice; // what is wrong in here
 						}else{// means buy has a buy has a lower price than sell, so we just need to give a price equal to sell price
 							// we don't need to beat the buy price
 							tempPrice = myAskList.get(countingSellList).getPrice();
@@ -323,14 +319,18 @@ public class lecMSReverse implements lecMS {
 				// which means we are not adding anything to the signal Object list that we want to buy
 				
 			}else if ( mode == SELL_MODE){// if we have to Sell
-				if ( this.averageChange <  (-epsilon)){// if average decrease than an ofshore
+				System.out.println("Mode is Sell");
+				System.out.println("this.averageChange :" + this.averageChange );
+				if ( this.averageChange >  epsilon){// if average decrease than an ofshore
+					System.out.println("it cames here");
+					
 					requestHappened = true;
 					// to change to reverse we have to change here
 					
 					while( this.shareQuantityLeft > 0){
 						
 						if ( myAskList.get(0).getPrice() <=  myBidList.get(countingBuyList).getPrice() ){
-							tempPrice = myAskList.get(0).getPrice() - this.epsilon; // we want our price to bitt he lowest price in the market 
+							tempPrice = myAskList.get(0).getPrice() - this.epsilonPrice; // we want our price to bitt he lowest price in the market 
 							// since the person who wants to buy is higher than the lowest price. so it will happen if we don't do anything
 						}else{
 							tempPrice = myBidList.get(countingBuyList).getPrice(); // see we will give a lower price in the market were no one did so 
@@ -377,8 +377,6 @@ public class lecMSReverse implements lecMS {
 	}
 	
 	
-	
-
 	public int getReceiptLength() {
 		return listOfAllReciept.size();
 	}

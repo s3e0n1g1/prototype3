@@ -40,28 +40,32 @@ import New.lecMS;
 import New.lecMSMomentum;
 import New.resultObjectL;
 import Selecting_Algothrim.newMomentum;
-import Selecting_Algothrim.orderObject;
-import Selecting_Algothrim.signalObject;
+import New.orderObject;
+import New.signalObject;
+import Trading_Engine.GraphData;
 import Trading_Engine.MyAskList;
 import Trading_Engine.MyBidList;
+import Trading_Engine.OneData;
 import Trading_Engine.ResultData;
 import Trading_Engine.myDatabase;
 
 public class ResultDisplay extends JFrame {
 	public static myDatabase myDB; 
 	private LinkedList<String> overviewResult;
-	private XYSeries series1;
-	private XYSeries series2;
-	private XYSeries series3;
 	public static int Threshold = 5;
 	public static String Strategy;
+	private LinkedList<String> strategyResult;
+	private LinkedList<ResultData> completedTrade;
+	private LinkedList<GraphData> bidFirstList;
+	private LinkedList<GraphData> askFirstList;
+	private LinkedList<GraphData> strategyAsk;
+	private LinkedList<GraphData> strategyBid;
+	private String title;
 	public ResultDisplay(String frametitle, myDatabase db, LinkedList<String> result){
 		final JFrame display = this;
 		overviewResult = result;
-		series1 = new XYSeries("Trade");
-		series2 = new XYSeries("Bid");
-		series3 = new XYSeries("Ask");
 		myDB = db;
+		title = frametitle;
 		JTabbedPane jtb = new JTabbedPane();
 		Container con = this.getContentPane(); 
 		con.add(jtb);
@@ -89,7 +93,7 @@ public class ResultDisplay extends JFrame {
 		setJMenuBar(menubar);
 
 		jtb.addTab("Analysis", analysisPanel());
-		jtb.addTab("Orderbook", orderbookPanel());
+		jtb.addTab("Original Trades", orderbookPanel());
 		jtb.addTab("Graph", graphPanel());
 
 		quit.addActionListener(new ActionListener() {
@@ -107,17 +111,10 @@ public class ResultDisplay extends JFrame {
 						if (strat.run == true) {
 							Strategy = strat.getStrategy();
 							Threshold = strat.getThreshold();
-							myStrategyResult = new StrategySelected();
-							myStrategyResult.setVisible(true);
-							if (strat.getStrategy() == "Momentum") {
-								//momentum
-								runNewStrategy();
-							} else if (strat.getStrategy() == "Mean Reversion"){
-								//mean
-								runNewStrategy();
-							}					
+							runNewStrategy();
+							myStrategyResult = new StrategySelected(strategyResult,completedTrade,askFirstList,bidFirstList,strategyAsk,strategyBid);
+							myStrategyResult.setVisible(true);				
 						}
-
 					}
 				}
 				);	
@@ -246,7 +243,7 @@ public class ResultDisplay extends JFrame {
 			while(set.next()){
 				long bidID = set.getLong(12);
 				long askID = set.getLong(13);
-				float tmpPrice = set.getFloat(6);
+				double tmpPrice = set.getDouble(6);
 				int tmpVol = set.getInt(7);
 				Time tmpTime = set.getTime(3);
 				Object [] fakedata1 = {bidID,askID, "$ " + tmpPrice, tmpVol, tmpTime};
@@ -278,7 +275,7 @@ public class ResultDisplay extends JFrame {
 		GridBagConstraints c = new GridBagConstraints();
 
 		//create new graph and data set
-		LineGraph returntimegraph = new LineGraph("Trades without Matching");
+		LineGraph returntimegraph = new LineGraph("All accounts from " + title.substring(13));
 		//add plots to the graph
 		try {
 			ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
@@ -288,7 +285,7 @@ public class ResultDisplay extends JFrame {
 				tmp = set.getString(5);
 				if(tmp.equalsIgnoreCase("ENTER")){
 					tmpType = set.getString(14);
-					float tmpPrice = set.getFloat(6);
+					Double tmpPrice = set.getDouble(6);
 					Time tmpTime = set.getTime(3);
 					double finishTime = tmpTime.getHours() + (tmpTime.getMinutes()/60.0);
 					//System.out.println("finishTime: " + finishTime + " = " + tmpTime.getHours() + " + " + (tmpTime.getMinutes()/60.0));
@@ -298,7 +295,7 @@ public class ResultDisplay extends JFrame {
 						LineGraph.addToDataset3(finishTime, tmpPrice);
 					}
 				}else if (tmp.equalsIgnoreCase("TRADE")){
-					float tmpPrice = set.getFloat(6);
+					double tmpPrice = set.getDouble(6);
 					Time tmpTime = set.getTime(3);
 					double finishTime = tmpTime.getHours() + (tmpTime.getMinutes()/60.0);
 					LineGraph.addToDataset2(finishTime, tmpPrice);
@@ -313,7 +310,7 @@ public class ResultDisplay extends JFrame {
 		//loop through database
 
 		//finalise dataset for graph
-		returntimegraph.finishGraph();
+		returntimegraph.finishGraph(true);
 		returntimegraph.setVisible(true);
 		graphpanel.add(returntimegraph);
 
@@ -339,8 +336,8 @@ public class ResultDisplay extends JFrame {
 
 		return panel;
 	}
-
 	private StrategySelected myStrategyResult; 
+	/*
 	protected void runStrategy() {
 		try {
 			ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
@@ -436,7 +433,7 @@ public class ResultDisplay extends JFrame {
 				}
 			}
 
-			/*
+			
 			if(rs.getLength() > 0){
 				//int i = 0;
 				double result;
@@ -452,7 +449,7 @@ public class ResultDisplay extends JFrame {
 				console.append("Evaluating strategy based on: "+ signal + " Signal \n");
 			} else {
 				console.append("rs null");
-			}*/
+			}
 			askleft.close();
 			bidleft.close();
 			set.close();
@@ -460,14 +457,19 @@ public class ResultDisplay extends JFrame {
 			System.out.println("In Mainmenu/runStrategy : " + e);
 		}
 	}
-
+	*/
 	//IMPLEMENT TRADING STRATEGY HERE
 	protected void runNewStrategy() {
 		try {
 			ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
 			MyBidList myBidList = new MyBidList();
 			MyAskList myAskList = new MyAskList();
-			LinkedList<ResultData> completedTrade = new LinkedList<ResultData>();
+			completedTrade = new LinkedList<ResultData>();
+			strategyResult = new LinkedList<String>();
+			askFirstList = new LinkedList<GraphData>();
+			bidFirstList = new LinkedList<GraphData>();
+			strategyAsk = new LinkedList<GraphData>();
+			strategyBid = new LinkedList<GraphData>();
 			LinkedList<ResultData> strategyTrade = new LinkedList<ResultData>();
 			int count = 0;
 			String tmp;
@@ -480,8 +482,11 @@ public class ResultDisplay extends JFrame {
 			double profit = 0;
 			int updateLines = 0;
 			int deleteLines = 0;
+			int strategyCount = 0;
 			int tmpCount = 0;
 			Time tmpTime;
+			Time startTime = Time.valueOf("10:00:00");
+			Time endTime = Time.valueOf("16:00:00");
 			LinkedList<signalObject> signalList;
 			signalObject tmpSignal;
 			LinkedList<Long> buyOrderID = new LinkedList<Long>();
@@ -492,46 +497,71 @@ public class ResultDisplay extends JFrame {
 
 			long currentID = 0;
 			while (set.next()){
+				//tmpCount = 0;
 				tmp = set.getString(5);
 				tmpType = set.getString(14);
 				tmpTime = set.getTime(3);
 				double finishTime = tmpTime.getHours() + (tmpTime.getMinutes()/60.0);
 				if(tmp.equalsIgnoreCase("ENTER")){
-					tmpPrice = set.getFloat(6);
+					tmpPrice = set.getDouble(6);
 					tmpVol = set.getInt(7);
-					OrderID = new LinkedList<Long>();
 					if(tmpType.equalsIgnoreCase("B")){
 						tmpID = set.getLong(12);
 						myBidList.add(tmpID,tmpPrice,tmpVol,tmpTime);
+						bidFirstList.add(new GraphData(myBidList.get(0).getPrice(),tmpTime));
+						//insertBidList(myBidList, myAskList, completedTrade,
+						//		tmpPrice, tmpVol, tmpID, tmpTime);
 						//series1.add(finishTime,tmpPrice);
 					}else if(tmpType.equalsIgnoreCase("A")){
 						tmpID = set.getLong(13);
 						myAskList.add(tmpID,tmpPrice,tmpVol,tmpTime);
+						askFirstList.add(new GraphData(myAskList.get(0).getPrice(),tmpTime));
+						//insertAskList(myBidList, myAskList, completedTrade,
+						//		tmpPrice, tmpVol, tmpID, tmpTime);
 						//series2.add(finishTime,tmpPrice);
 					}
-					tmpCount = matchTrade(myBidList,myAskList,completedTrade,tmpTime);
-					for(int i = 1; i < tmpCount;i++){
-						strategy.addTrade(completedTrade.get(completedTrade.size() - (tmpCount - i) - 1).getPrice());
-						signalList = strategy.generateSignalList(myBidList, myAskList);
-						while(!signalList.isEmpty()){
-							tmpSignal = signalList.poll();
-							currentID--;
-							if(tmpSignal.getType().equalsIgnoreCase("sell")){
-								myAskList.add(currentID,tmpSignal.getPrice(),tmpSignal.getQuantity(),tmpTime);
-								matchTrade(myBidList,myAskList,completedTrade,tmpTime);
-								sellOrderID.add(currentID);
-							}else if (tmpSignal.getType().equalsIgnoreCase("buy")){
-								myBidList.add(currentID,tmpSignal.getPrice(),tmpSignal.getQuantity(),tmpTime);
-								matchTrade(myBidList,myAskList,completedTrade,tmpTime);
-								buyOrderID.add(currentID);
+					/*
+					if(tmpTime.after(startTime) && tmpTime.before(endTime)){
+						tmpCount += matchTrade(myBidList,myAskList,completedTrade,tmpTime,strategyTrade);
+					}
+					*/
+					if(tmpTime.after(startTime) && tmpTime.before(endTime)){
+						tmpCount = matchTrade(myBidList,myAskList,completedTrade,tmpTime,strategyTrade);
+						
+						for(int i = 1; i <= tmpCount;i++){
+							strategy.addTrade(completedTrade.get(completedTrade.size() - (tmpCount - i) - 1).getPrice());
+							signalList = strategy.generateSignalList(myBidList, myAskList);
+							strategyTrade = new LinkedList<ResultData>();
+							OrderID = new LinkedList<Long>();
+							while(!signalList.isEmpty()){
+								tmpSignal = signalList.poll();
+								currentID--;
+								if(tmpSignal.getType().equalsIgnoreCase("sell")){
+									count++;
+									myAskList.add(currentID,tmpSignal.getPrice(),tmpSignal.getQuantity(),tmpTime);
+									askFirstList.add(new GraphData(myAskList.get(0).getPrice(),tmpTime));
+									strategyAsk.add(new GraphData(tmpSignal.getPrice(),tmpTime));
+									matchTrade(myBidList,myAskList,completedTrade,tmpTime,strategyTrade);
+									sellOrderID.add(currentID);
+									strategyCount++;
+								}else if (tmpSignal.getType().equalsIgnoreCase("buy")){
+									count++;
+									myBidList.add(currentID,tmpSignal.getPrice(),tmpSignal.getQuantity(),tmpTime);
+									bidFirstList.add(new GraphData(myBidList.get(0).getPrice(),tmpTime));
+									strategyBid.add(new GraphData(tmpSignal.getPrice(),tmpTime));
+									matchTrade(myBidList,myAskList,completedTrade,tmpTime,strategyTrade);
+									buyOrderID.add(currentID);
+									strategyCount++;
+								}
+								OrderID.add(currentID);
 							}
-							OrderID.add(currentID);
+							strategy.getSTrade(strategyTrade);
+							strategy.getReceiptList(OrderID);
 						}
 					}
-					strategy.getReceiptList(OrderID);
 				}else if (tmp.equalsIgnoreCase("AMEND")){
 					updateLines++;
-					tmpPrice = set.getFloat(6);
+					tmpPrice = set.getInt(6);
 					tmpVol = set.getInt(7);
 					if(tmpType.equalsIgnoreCase("B")){
 						tmpID = set.getLong(12);
@@ -552,19 +582,23 @@ public class ResultDisplay extends JFrame {
 				}
 				count++;
 			};
+			for(int i = 0; i < strategyTrade.size();i++){
+				System.out.println("strategyTrade(" + i +") - Bid: " + strategyTrade.get(i).getBuyID() + " Ask: " 
+			+ strategyTrade.get(i).getAskID() + " Price: " + strategyTrade.get(i).getPrice());
+			}
+			
 			LinkedList<resultObjectL> listOfResult;
-			resultObjectL tempResult;
 			System.out.println("listOfAllReciept size: " + strategy.getReceiptLength());
 			EvaluatorLec evaluator = new EvaluatorLec(strategy,completedTrade);
-			evaluator.run();
-			ResultGenerator resultGenerator = new ResultGenerator(evaluator);
-			listOfResult = resultGenerator.getResultList();
+			listOfResult = evaluator.run();
+			 
+
 			System.out.println("listOfResult size: " + listOfResult.size());
 
 
 			//System.out.println("count : " + count);
 			Mainmenu.console.append("Total lines read : " + count + "\n");
-			Mainmenu.console.append("Total lines matched : " + completedTrade.size() + "\n");
+			Mainmenu.console.append("Total lines matched : " + completedTrade.size() + " == tmpCount: " + tmpCount + "\n");
 			Mainmenu.console.append("Total lines update : " + updateLines + "\n");
 			Mainmenu.console.append("Total lines delete : " + deleteLines + "\n");
 			Mainmenu.console.append("Total Bid Error : " + myBidList.getError() + " Total Ask Error: " 
@@ -574,21 +608,29 @@ public class ResultDisplay extends JFrame {
 			//Mainmenu.console.append(arg0)
 			//Mainmenu.console.append();
 
-
+			resultObjectL tempResult;
 			while(!listOfResult.isEmpty()){
 				tempResult = listOfResult.poll();
 				Mainmenu.console.append("At time: " + tempResult.getTime() + "We get this " + tempResult.getPercentage() + " benefit. \n");
 			}
 
 			//update jlabels
-
+			strategyResult.add(Integer.toString( count));
+			strategyResult.add(Integer.toString( completedTrade.size()));
+			strategyResult.add(Integer.toString( strategyCount));
+			strategyResult.add(Integer.toString( updateLines));
+			strategyResult.add(Integer.toString( deleteLines));
+			strategyResult.add(Integer.toString( myBidList.getLength()));
+			strategyResult.add(Integer.toString( myAskList.getLength()));
+			
+			/*
 			myStrategyResult.LinesRead.setText(Integer.toString( count));
 			myStrategyResult.MatchedLines.setText(Integer.toString(completedTrade.size()));
 			myStrategyResult.UpdatedLines.setText(Integer.toString(updateLines));
 			myStrategyResult.DeletedLines.setText(Integer.toString(deleteLines));
 			myStrategyResult.BidList.setText(Integer.toString(myAskList.getLength()));
 			myStrategyResult.AskList.setText(Integer.toString(myAskList.getLength()));
-
+			 */
 
 
 			set.close();
@@ -596,38 +638,50 @@ public class ResultDisplay extends JFrame {
 			System.out.println("In Mainmenu/runStrategy : " + e);
 		}
 	}
-	private int matchTrade(MyBidList myBidList, MyAskList myAskList, LinkedList<ResultData> completedTrade, Time tmpTime) {
+	
+	private int matchTrade(MyBidList myBidList, MyAskList myAskList, LinkedList<ResultData> completedTrade, Time tmpTime, LinkedList<ResultData> strategyTrade) {
 		int numberOfTrade = 0;
 		if(myAskList.getLength() > 0 && myBidList.getLength() > 0){
-			double tmpAskFirstPrice = myAskList.get(0).getPrice();
-			double tmpBidFirstPrice = myBidList.get(0).getPrice();
-			if(tmpBidFirstPrice >= tmpAskFirstPrice){
-				long tmpAskFirstID = myAskList.get(0).getID();
-				long tmpBidFirstID = myBidList.get(0).getID();
-				int tmpAskFirstVol = myAskList.get(0).getVol();
-				int tmpBidFirstVol = myBidList.get(0).getVol();
-				if(tmpBidFirstVol > tmpAskFirstVol){
-					completedTrade.add(new ResultData(tmpBidFirstID,tmpAskFirstID,tmpAskFirstPrice,tmpAskFirstVol,tmpTime));
+			OneData firstInAsk = myAskList.get(0);
+			OneData firstInBid = myBidList.get(0);
+
+			if(firstInBid.getPrice() >= firstInAsk.getPrice()){
+				ResultData tmpResultData;
+				if(firstInBid.getVol() > firstInAsk.getVol()){
+					tmpResultData = new ResultData(firstInBid.getID(),firstInAsk.getID(),firstInAsk.getPrice(),firstInAsk.getVol(),tmpTime);
+					completedTrade.add(tmpResultData);
 					numberOfTrade++;
-					myBidList.updateFirst(tmpBidFirstVol - tmpAskFirstVol);
+					if(firstInBid.getID() < 0 || firstInAsk.getID() < 0){
+						strategyTrade.add(tmpResultData);
+					}
+					myBidList.updateFirst(firstInBid.getVol() - firstInAsk.getVol());
 					myAskList.deleteAtIndex(0);
-					numberOfTrade += matchTrade(myBidList,myAskList,completedTrade,tmpTime);
-				}else if(tmpBidFirstVol == tmpAskFirstVol){
-					completedTrade.add(new ResultData(tmpBidFirstID,tmpAskFirstID,tmpAskFirstPrice,tmpBidFirstVol,tmpTime));
+					numberOfTrade += matchTrade(myBidList,myAskList,completedTrade,tmpTime,strategyTrade);
+				}else if(firstInBid.getVol() == firstInAsk.getVol()){
+					tmpResultData = new ResultData(firstInBid.getID(),firstInAsk.getID(),firstInAsk.getPrice(),firstInBid.getVol(),tmpTime);
+					completedTrade.add(tmpResultData);
 					numberOfTrade++;
+					if(firstInBid.getID() < 0 || firstInAsk.getID() < 0){
+						strategyTrade.add(tmpResultData);
+					}
 					myAskList.deleteAtIndex(0);
 					myBidList.deleteAtIndex(0);
 				}else{
-					completedTrade.add(new ResultData(tmpBidFirstID,tmpAskFirstID,tmpAskFirstPrice,tmpBidFirstVol,tmpTime));
+					tmpResultData = new ResultData(firstInBid.getID(),firstInAsk.getID(),firstInAsk.getPrice(),firstInBid.getVol(),tmpTime);
+					completedTrade.add(tmpResultData);
 					numberOfTrade++;
-					myAskList.updateFirst(tmpAskFirstVol - tmpBidFirstVol);
+					if(firstInBid.getID() < 0 || firstInAsk.getID() < 0){
+						strategyTrade.add(tmpResultData);
+					}
+					myAskList.updateFirst(firstInAsk.getVol() - firstInBid.getVol());
 					myBidList.deleteAtIndex(0);
 				}
 			}
 		}
 		return numberOfTrade;
 	}
-	/*
+	
+	
 	public void insertBidList(MyBidList myBidList, MyAskList myAskList,
 			LinkedList<ResultData> completedTrade, double tmpPrice, int tmpVol,
 			long tmpID, Time tmpTime) {
@@ -677,17 +731,14 @@ public class ResultDisplay extends JFrame {
 					completedTrade.add(new ResultData(tmpBidFirstID,tmpID,tmpPrice,tmpBidFirstVol,tmpTime));
 					tmpBidFirstVol = tmpVol - tmpBidFirstVol;
 					myBidList.deleteAtIndex(0);
-					series3.add(finishTime,tmpPrice);
 					insertBidList(myBidList, myAskList,completedTrade, tmpPrice,tmpBidFirstVol ,tmpID, tmpTime);
 				}else if(tmpVol == tmpBidFirstVol){
 					completedTrade.add(new ResultData(tmpBidFirstID,tmpID,tmpPrice,tmpVol,tmpTime));
 					myBidList.deleteAtIndex(0);
-					series3.add(finishTime,tmpPrice);
 				}else{
 					completedTrade.add(new ResultData(tmpBidFirstID,tmpID,tmpPrice,tmpVol,tmpTime));
 					tmpBidFirstVol -= tmpVol;
 					myBidList.updateFirst(tmpBidFirstVol);
-					series3.add(finishTime,tmpPrice);
 				}
 			}else{
 				myAskList.add(tmpID,tmpPrice,tmpVol,tmpTime);
@@ -696,6 +747,6 @@ public class ResultDisplay extends JFrame {
 			myAskList.add(tmpID,tmpPrice,tmpVol,tmpTime);
 		}
 		}
-	 */
+	 
 
 }

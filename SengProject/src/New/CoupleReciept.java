@@ -1,6 +1,7 @@
 package New;
 
 
+import java.sql.Time;
 import java.util.LinkedList;
 public class CoupleReciept {
 	
@@ -8,22 +9,22 @@ public class CoupleReciept {
 	 * A class to hold the recipt of each couple of buy and sell
 	 */
 	public CoupleReciept(){
-		buyList = new LinkedList<Integer>();
-		sellList = new LinkedList<Integer>();
+		buyList = new LinkedList<Long>();
+		sellList = new LinkedList<Long>();
 		debit = 0; // bedehkar
 		credit = 0; // talabkar
-		time = 0;
+		time = new Time(0);
 	}
 	
 	/**
 	 * TO set the buy and sell List
 	 * @param aBuyList
 	 */
-	public void setBuyList(LinkedList<Integer> aBuyList ){
+	public void setBuyList(LinkedList<Long> aBuyList ){
 		this.buyList = aBuyList;
 	}
 	
-	public void setSellList( LinkedList<Integer> aSellList){
+	public void setSellList( LinkedList<Long> aSellList){
 		this.sellList = aSellList;
 	}
 	
@@ -35,20 +36,21 @@ public class CoupleReciept {
 		this.debit += aPrice;
 	}
 	
-	public void addToTime( int aTime){
-		this.time += aTime;
+	public void addToTime( Time aTime){
+		long tmp = this.time.getTime();
+		this.time = new Time(tmp + aTime.getTime());
 	}
 	
-	public LinkedList<Integer> getBuyList(){
+	public LinkedList<Long> getBuyList(){
 		return buyList;
 	}
 	
-	public LinkedList<Integer> geSellList(){
+	public LinkedList<Long> geSellList(){
 		return sellList;
 	}
 	
 	
-	public int getTime(){
+	public Time getTime(){
 		return time;
 	}
 	
@@ -59,9 +61,10 @@ public class CoupleReciept {
 	public double getDebit(){
 		return debit;
 	}
-	int time;
+	Time time;
 	double credit;
 	double debit;
-	LinkedList<Integer> buyList;
-	LinkedList<Integer> sellList;
+	LinkedList<Long> buyList;
+	LinkedList<Long> sellList;
+
 }

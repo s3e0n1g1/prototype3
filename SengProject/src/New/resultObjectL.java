@@ -1,21 +1,23 @@
 package New;
 
+import java.sql.Time;
+
 
 public class resultObjectL {
 
-	public resultObjectL( int averageTime, double aPercentage){
+	public resultObjectL( Time averageTime, double aPercentage){
 		time = averageTime;
 		percentage = aPercentage;
 	}
 	
-	public int getTime(){
+	public Time getTime(){
 		return time;
 	}
 	public double getPercentage(){
 		return percentage;
 	}
 	
-	private int time;
+	private Time time;
 	private double percentage;
 	
 }

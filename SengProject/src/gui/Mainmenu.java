@@ -19,6 +19,7 @@ import org.junit.runner.Result;
 
 
 import New.lecMS;
+import New.lecMSMomentum;
 import Selecting_Algothrim.newMomentum;
 import Selecting_Algothrim.orderObject;
 import Selecting_Algothrim.signalObject;
@@ -73,13 +74,12 @@ public class Mainmenu extends JFrame{
 						if(returnVal == JFileChooser.APPROVE_OPTION){
 							csv = chooser.getSelectedFile();
 							try {
-								console.append(myDB.insertAll(csv,"all_list"));
+								myResult = new ResultDisplay("Analysis for " + csv.getName(),myDB,myDB.insertAll(csv,"all_list"));
 							} catch (Exception e) {
 								console.append("Cannot insert csv to database\n");
 							}
-							myResult = new ResultDisplay("Analysis for " + csv.getName(),myDB);
 							myResult.setVisible(true);
-							runNewStrategy();
+							//runNewStrategy();
 						
 							//String tmp = myDB.getRowCount();
 							//console.append(tmp);
@@ -148,7 +148,7 @@ public class Mainmenu extends JFrame{
 			int deleteLines = 0;
 			Time tmpTime;
 
-			lecMS strategy = new lecMS();
+			lecMSMomentum strategy = new lecMSMomentum();
 
 			while (set.next()){
 				tmp = set.getString(5);
@@ -202,12 +202,12 @@ public class Mainmenu extends JFrame{
 			
 			
 			//update jlabels
-			myResult.LinesRead.setText(Integer.toString( count));
-			myResult.MatchedLines.setText(Integer.toString(completedTrade.size()));
-			myResult.UpdatedLines.setText(Integer.toString(updateLines));
-			myResult.DeletedLines.setText(Integer.toString(deleteLines));
-			myResult.BidList.setText(Integer.toString(myAskList.getLength()));
-			myResult.AskList.setText(Integer.toString(myAskList.getLength()));
+			//myResult.LinesRead.setText(Integer.toString( count));
+			//myResult.enterLines.setText(Integer.toString(completedTrade.size()));
+			//myResult.askLines.setText(Integer.toString(updateLines));
+			//myResult.bidLines.setText(Integer.toString(deleteLines));
+			//myResult.tradeLines.setText(Integer.toString(myAskList.getLength()));
+			//myResult.AskList.setText(Integer.toString(myAskList.getLength()));
 			
 			
 			//ReturnCalculated.setText("212"); //to change value of labels

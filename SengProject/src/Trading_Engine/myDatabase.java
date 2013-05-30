@@ -2,6 +2,7 @@ package Trading_Engine;
 
 import java.io.*;
 import java.sql.*;
+import java.util.LinkedList;
 
 public class myDatabase {
 	private static Connection connection;
@@ -20,8 +21,7 @@ public class myDatabase {
 		}
 		deleteAllTables();
 	}
-	public static String insertAllDatabase (Connection con, BufferedReader br, String newHead, String dbName){
-		String reply = "";
+	public static void insertAllDatabase (Connection con, BufferedReader br, String newHead, String dbName, LinkedList<String> overviewResult){
 		try {
 			String st = "";
 			String preInsertQuery = "insert into " + dbName +"(" + newHead + ")values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -37,6 +37,7 @@ public class myDatabase {
 			int delete = 0;
 			int trade = 0;
 			int other = 0;
+			String checkLastTime = "";
 			while ((st=br.readLine())!=null){
 				String[] insertElement = st.split(",");
 				if(insertElement[3].equalsIgnoreCase("ENTER") ){
@@ -64,16 +65,35 @@ public class myDatabase {
 				if(trade%1000 == 0){
 					tradePre.executeBatch();
 				}
+				checkLastTime = insertElement[2];
 			}
+			//System.out.println("checkLastTime: " + checkLastTime);
 			orderBookQuery.executeBatch();
 			tradePre.executeBatch();
 			con.commit();
-			reply = "total length of CSV file is " + count + " lines. \n" 
-					+ "ENTER consist of " + enter + " lines which ask has " 
-					+ ask + " lines and bid has " + bid + " lines \n"
-					+ "AMEND consist of " + amend + " lines. \n"
-					+ "DELETE consist of " + delete + " lines. \n"
-					+ "TRADE consist of " + trade + " lines. \n";
+			String stockName = "default name";
+			Date currentDate = null;
+			Time startTime = null;
+			Time endTime = null;
+			ResultSet firstLine = getResultSet("select * from " + dbName + " order by Entry_Time asc limit 1");
+			if(firstLine.next()){
+				stockName = firstLine.getString(1);
+				currentDate = firstLine.getDate(2);
+				startTime = firstLine.getTime(3);
+			}
+			firstLine.close();
+			
+			overviewResult.add(stockName);
+			overviewResult.add(currentDate.toString());
+			overviewResult.add(startTime.toString() + " to " + checkLastTime.substring(0, 8));
+			overviewResult.add(Integer.toString( count));
+			overviewResult.add(Integer.toString(enter));
+			overviewResult.add(Integer.toString(ask));
+			overviewResult.add(Integer.toString(bid));
+			overviewResult.add(Integer.toString(trade));
+			overviewResult.add(Integer.toString(amend));
+			overviewResult.add(Integer.toString(delete));
+
 			System.out.println("Result of table " + dbName + " :");
 			System.out.println("i1 length: " + count + " == " + (enter + amend + delete + trade + other));
 			System.out.println("enter: " + enter + " ask: " + ask + " bid " + bid);
@@ -85,11 +105,10 @@ public class myDatabase {
 		}catch(Exception e){
 			System.out.println("In insertAllDatabase: " + e);
 		}
-		return reply;
 	}
-	public String insertAll(File f, String dbName) {
+	public LinkedList<String> insertAll(File f, String dbName) {
+		LinkedList<String> overviewResult = new LinkedList<String>();
 		deleteAllTables();
-		String reply = "";
 		try {
 			Statement s = connection.createStatement();
 			BufferedReader br = new BufferedReader(new FileReader(f));
@@ -138,7 +157,7 @@ public class myDatabase {
 					//System.out.println(tableQuery);
 					s.execute("create table " + dbName + "(" + tableQuery + ")");
 					s.execute("create table old_trade_list(" + tableQuery + ")");
-					reply = insertAllDatabase(connection,br,newHead,dbName);
+					insertAllDatabase(connection,br,newHead,dbName,overviewResult);
 				} else {
 					System.out.println("Error: file content not csv format");
 				}
@@ -150,7 +169,7 @@ public class myDatabase {
 		}catch (Exception e) {
 			System.out.println("In insertAll:  " + e);
 		}
-		return reply;
+		return overviewResult;
 	}
 	public void deleteAllTables(){
 		try {
@@ -517,7 +536,7 @@ public class myDatabase {
 			System.out.println("Error closing database : " + e);
 		}
 	}
-	public ResultSet getResultSet(String query) {
+	public static ResultSet getResultSet(String query) {
 		ResultSet set = null;
 		try{
 			Statement statement = connection.createStatement();

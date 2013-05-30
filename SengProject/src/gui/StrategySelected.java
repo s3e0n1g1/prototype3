@@ -46,6 +46,7 @@ import Trading_Engine.myDatabase;
 
 public class StrategySelected extends JFrame {
 	//public static myDatabase myDB;
+	private LinkedList<ResultData> resultTrade;
 	public StrategySelected(){
 		//myDB = db;
 		JTabbedPane jtb = new JTabbedPane();
@@ -94,7 +95,7 @@ public class StrategySelected extends JFrame {
 		JPanel panel = new JPanel();
 		JPanel panel2 = new JPanel();
 		
-		Dimension d = new Dimension(150,100);
+		Dimension d = new Dimension(200,150);
 		panel.setLayout((new BoxLayout(panel, BoxLayout.PAGE_AXIS)));
 		
 		panel.setSize(d);
@@ -158,13 +159,10 @@ public class StrategySelected extends JFrame {
 		
 		JTable buybook = new JTable();
 		buybook.setModel(ordertable);
-
-		Object [] fakedata1 = {123,245, "$ " + Double.toString(new Double(5.30)), new Integer(43), "9:00"};
 		
-		ordertable.addElement(fakedata1);
-		ordertable.addElement(fakedata1);
-		ordertable.addElement(fakedata1);
-		ordertable.addElement(fakedata1);
+		
+		
+		
 		Dimension d = new Dimension (500,150);
 
 		JScrollPane scrollTable = new JScrollPane(buybook);
@@ -190,6 +188,8 @@ public class StrategySelected extends JFrame {
 		LineGraph.addToDataset(810.0, 3.3);
 		LineGraph.addToDataset(240.0, 6.3);
 		LineGraph.addToDataset(546.0, 1.6);
+		
+		
 		returntimegraph.finishGraph();
 		returntimegraph.setVisible(true);
 		graphpanel.add(returntimegraph);

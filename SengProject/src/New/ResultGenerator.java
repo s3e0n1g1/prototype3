@@ -1,6 +1,8 @@
 package New;
 
+import java.sql.Time;
 import java.util.LinkedList;
+import java.util.Random;
 public class ResultGenerator {
 
 	
@@ -16,12 +18,15 @@ public class ResultGenerator {
 	public LinkedList<resultObjectL> getResultList(){
 		
 		LinkedList<resultObjectL> results = new LinkedList<resultObjectL>();
-		
+		Random ran = new Random();
 		for ( CoupleReciept CR : CRList ){
 			int numberOFTrade = CR.geSellList().size() + CR.getBuyList().size();
 			double moneyGet = CR.getCredit();
 			double moneyPaid = CR.getDebit();
-			results.add( new resultObjectL ( CR.getTime()/numberOFTrade , ((moneyGet - moneyPaid)/ moneyPaid) ));
+			long tempLong = CR.getTime().getTime();
+			tempLong = ( long) (tempLong/numberOFTrade);
+			Time averageTime = new Time(tempLong);
+				results.add( new resultObjectL ( averageTime, ran.nextDouble()-0.5));
 		}
 		
 		return results;

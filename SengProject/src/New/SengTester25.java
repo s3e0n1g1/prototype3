@@ -7,6 +7,7 @@ public class SengTester25 {
 	/**
 	 * @param args
 	 */
+	/*
 	public static void main(String[] args) {
 		
 		LinkedList<TradeObject> tradeListPast = new LinkedList<TradeObject>();
@@ -114,5 +115,5 @@ public class SengTester25 {
 
 
 	}
-
+*/
 }

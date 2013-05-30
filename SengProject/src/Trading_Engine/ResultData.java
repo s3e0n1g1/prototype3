@@ -29,4 +29,12 @@ public class ResultData {
 		return Vol;
 	}
 
+	public long getAskID() {
+		return AskID;
+	}
+
+	public long getBuyID() {
+		return BidID;
+	}
+
 }

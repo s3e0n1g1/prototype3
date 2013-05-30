@@ -118,4 +118,11 @@ public class LineGraph extends JPanel{
 	public static void addToDataset3(double finishTime, float tmpPrice) {
 		series3.add(finishTime, tmpPrice);
 	}
+
+	public static void addSeries(XYSeries s1, XYSeries s2,
+			XYSeries s3) {
+		series1 = s1;
+		series2 = s2;
+		series3 = s3;
+	}
 }

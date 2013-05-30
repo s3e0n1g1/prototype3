@@ -39,4 +39,8 @@ public class OneData {
 		return ID;
 	}
 
+	public void updateVol(int tmpVol) {
+		Vol = tmpVol;
+	}
+
 }

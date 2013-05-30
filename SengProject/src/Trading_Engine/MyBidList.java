@@ -87,8 +87,8 @@ public class MyBidList {
 		allID.remove(i);
 	}
 
-	public void updateFirst(long tmpID, double tmpPrice, int tmpVol, Time tmpTime) {
-		myList.get(0).updateValue(tmpID,tmpPrice,tmpVol,tmpTime);
+	public void updateFirst(int vol) {
+		myList.get(0).updateVol(vol);
 	}
 
 	public int getError() {

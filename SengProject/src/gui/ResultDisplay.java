@@ -49,16 +49,15 @@ import Trading_Engine.myDatabase;
 
 public class ResultDisplay extends JFrame {
 	public static myDatabase myDB; 
-	public static LinkedList<ResultData> completedTrade;
 	private LinkedList<String> overviewResult;
 	private XYSeries series1;
-    private XYSeries series2;
-    private XYSeries series3;
+	private XYSeries series2;
+	private XYSeries series3;
 	public ResultDisplay(String frametitle, myDatabase db, LinkedList<String> result){
 		overviewResult = result;
 		series1 = new XYSeries("Trade");
-    	series2 = new XYSeries("Bid");
-    	series3 = new XYSeries("Ask");
+		series2 = new XYSeries("Bid");
+		series3 = new XYSeries("Ask");
 		myDB = db;
 		JTabbedPane jtb = new JTabbedPane();
 		Container con = this.getContentPane(); 
@@ -101,7 +100,7 @@ public class ResultDisplay extends JFrame {
 				new ActionListener() {
 					public void actionPerformed(ActionEvent event) {	
 						//open new frame for strategy analysis
-						
+
 						myStrategyResult = new StrategySelected();
 						myStrategyResult.setVisible(true);
 						//run strategy to update the new frame's table
@@ -112,7 +111,7 @@ public class ResultDisplay extends JFrame {
 				);	
 		setVisible(true);
 	}
-	
+
 	public JLabel stockName;
 	public JLabel stockDate;
 	public JLabel stockTime;
@@ -163,7 +162,7 @@ public class ResultDisplay extends JFrame {
 		panel.add(new JLabel("Number of TRADE: "));	
 		panel.add(new JLabel("Number of AMEND: "));
 		panel.add(new JLabel("Number of DELETE: "));
-		
+
 		panel2.add(stockName);
 		panel2.add(stockDate);
 		panel2.add(stockTime);
@@ -174,7 +173,7 @@ public class ResultDisplay extends JFrame {
 		panel2.add(tradeLines);
 		panel2.add(amendLines);
 		panel2.add(deleteLines);
-		
+
 		stockName.setText(overviewResult.get(0));
 		stockDate.setText(overviewResult.get(1));
 		stockTime.setText(overviewResult.get(2));
@@ -455,7 +454,8 @@ public class ResultDisplay extends JFrame {
 			ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
 			MyBidList myBidList = new MyBidList();
 			MyAskList myAskList = new MyAskList();
-			completedTrade = new LinkedList<ResultData>();
+			LinkedList<ResultData> completedTrade = new LinkedList<ResultData>();
+			LinkedList<ResultData> strategyTrade = new LinkedList<ResultData>();
 			int count = 0;
 			String tmp;
 			String tmpType;
@@ -467,12 +467,16 @@ public class ResultDisplay extends JFrame {
 			double profit = 0;
 			int updateLines = 0;
 			int deleteLines = 0;
+			int tmpCount = 0;
 			Time tmpTime;
 			LinkedList<signalObject> signalList;
 			signalObject tmpSignal;
-			LinkedList<Long> orderID;
+			LinkedList<Long> buyOrderID = new LinkedList<Long>();
+			LinkedList<Long> sellOrderID = new LinkedList<Long>();
+			LinkedList<Long> OrderID;
 			lecMSMomentum strategy = new lecMSMomentum();
 			strategy.setAmountToTrade(100); 
+
 			long currentID = 0;
 			while (set.next()){
 				tmp = set.getString(5);
@@ -482,40 +486,36 @@ public class ResultDisplay extends JFrame {
 				if(tmp.equalsIgnoreCase("ENTER")){
 					tmpPrice = set.getFloat(6);
 					tmpVol = set.getInt(7);
-					strategy.addTrade(tmpPrice);
+					OrderID = new LinkedList<Long>();
 					if(tmpType.equalsIgnoreCase("B")){
 						tmpID = set.getLong(12);
-						insertBidList(myBidList, myAskList, completedTrade,
-								tmpPrice, tmpVol, tmpID, tmpTime);
-						
+						myBidList.add(tmpID,tmpPrice,tmpVol,tmpTime);
 						//series1.add(finishTime,tmpPrice);
 					}else if(tmpType.equalsIgnoreCase("A")){
 						tmpID = set.getLong(13);
-						insertAskList(myBidList, myAskList, completedTrade,
-								tmpPrice, tmpVol, tmpID, tmpTime);
+						myAskList.add(tmpID,tmpPrice,tmpVol,tmpTime);
 						//series2.add(finishTime,tmpPrice);
 					}
-					if(myBidList.getLength() > 1 && myAskList.getLength() > 1){
-						orderID = new LinkedList<Long>();
+					tmpCount = matchTrade(myBidList,myAskList,completedTrade,tmpTime);
+					for(int i = 1; i < tmpCount;i++){
+						strategy.addTrade(completedTrade.get(completedTrade.size() - (tmpCount - i) - 1).getPrice());
 						signalList = strategy.generateSignalList(myBidList, myAskList);
 						while(!signalList.isEmpty()){
-							//System.out.println("I am here!!");
 							tmpSignal = signalList.poll();
+							currentID--;
 							if(tmpSignal.getType().equalsIgnoreCase("sell")){
-								insertAskList(myBidList, myAskList, completedTrade,
-										tmpSignal.getPrice(), tmpSignal.getQuantity(),currentID , tmpTime);
-								//series2.add(finishTime,tmpPrice);
+								myAskList.add(currentID,tmpSignal.getPrice(),tmpSignal.getQuantity(),tmpTime);
+								matchTrade(myBidList,myAskList,completedTrade,tmpTime);
+								sellOrderID.add(currentID);
 							}else if (tmpSignal.getType().equalsIgnoreCase("buy")){
-								insertBidList(myBidList, myAskList, completedTrade,
-										tmpSignal.getPrice(), tmpSignal.getQuantity(), currentID, tmpTime);
-								//series1.add(finishTime,tmpPrice);
+								myBidList.add(currentID,tmpSignal.getPrice(),tmpSignal.getQuantity(),tmpTime);
+								matchTrade(myBidList,myAskList,completedTrade,tmpTime);
+								buyOrderID.add(currentID);
 							}
-							orderID.add(currentID);
-							currentID++;
-						};
-						strategy.getReceiptList(orderID);
+							OrderID.add(currentID);
+						}
 					}
-
+					strategy.getReceiptList(OrderID);
 				}else if (tmp.equalsIgnoreCase("AMEND")){
 					updateLines++;
 					tmpPrice = set.getFloat(6);
@@ -568,7 +568,7 @@ public class ResultDisplay extends JFrame {
 			}
 
 			//update jlabels
-			
+
 			myStrategyResult.LinesRead.setText(Integer.toString( count));
 			myStrategyResult.MatchedLines.setText(Integer.toString(completedTrade.size()));
 			myStrategyResult.UpdatedLines.setText(Integer.toString(updateLines));
@@ -583,6 +583,38 @@ public class ResultDisplay extends JFrame {
 			System.out.println("In Mainmenu/runStrategy : " + e);
 		}
 	}
+	private int matchTrade(MyBidList myBidList, MyAskList myAskList, LinkedList<ResultData> completedTrade, Time tmpTime) {
+		int numberOfTrade = 0;
+		if(myAskList.getLength() > 0 && myBidList.getLength() > 0){
+			double tmpAskFirstPrice = myAskList.get(0).getPrice();
+			double tmpBidFirstPrice = myBidList.get(0).getPrice();
+			if(tmpBidFirstPrice >= tmpAskFirstPrice){
+				long tmpAskFirstID = myAskList.get(0).getID();
+				long tmpBidFirstID = myBidList.get(0).getID();
+				int tmpAskFirstVol = myAskList.get(0).getVol();
+				int tmpBidFirstVol = myBidList.get(0).getVol();
+				if(tmpBidFirstVol > tmpAskFirstVol){
+					completedTrade.add(new ResultData(tmpBidFirstID,tmpAskFirstID,tmpAskFirstPrice,tmpAskFirstVol,tmpTime));
+					numberOfTrade++;
+					myBidList.updateFirst(tmpBidFirstVol - tmpAskFirstVol);
+					myAskList.deleteAtIndex(0);
+					numberOfTrade += matchTrade(myBidList,myAskList,completedTrade,tmpTime);
+				}else if(tmpBidFirstVol == tmpAskFirstVol){
+					completedTrade.add(new ResultData(tmpBidFirstID,tmpAskFirstID,tmpAskFirstPrice,tmpBidFirstVol,tmpTime));
+					numberOfTrade++;
+					myAskList.deleteAtIndex(0);
+					myBidList.deleteAtIndex(0);
+				}else{
+					completedTrade.add(new ResultData(tmpBidFirstID,tmpAskFirstID,tmpAskFirstPrice,tmpBidFirstVol,tmpTime));
+					numberOfTrade++;
+					myAskList.updateFirst(tmpAskFirstVol - tmpBidFirstVol);
+					myBidList.deleteAtIndex(0);
+				}
+			}
+		}
+		return numberOfTrade;
+	}
+	/*
 	public void insertBidList(MyBidList myBidList, MyAskList myAskList,
 			LinkedList<ResultData> completedTrade, double tmpPrice, int tmpVol,
 			long tmpID, Time tmpTime) {
@@ -597,7 +629,7 @@ public class ResultDisplay extends JFrame {
 					completedTrade.add(new ResultData(tmpID,tmpAskFirstID,tmpAskFirstPrice,tmpAskFirstVol,tmpTime));
 					myAskList.deleteAtIndex(0);
 					tmpAskFirstVol = tmpVol - tmpAskFirstVol;
-					
+
 					//series3.add(finishTime,tmpPrice);
 					insertBidList(myBidList, myAskList,completedTrade, tmpPrice, tmpAskFirstVol ,tmpID, tmpTime);
 				}else if(tmpVol == tmpAskFirstVol){
@@ -607,7 +639,7 @@ public class ResultDisplay extends JFrame {
 				}else{
 					completedTrade.add(new ResultData(tmpID,tmpAskFirstID,tmpAskFirstPrice,tmpVol,tmpTime));
 					tmpAskFirstVol -= tmpVol;
-					myAskList.updateFirst(tmpAskFirstID, tmpAskFirstPrice, tmpAskFirstVol, tmpAskFirstTime);
+					myAskList.updateFirst(tmpAskFirstVol);
 					//series3.add(finishTime,tmpPrice);
 				}
 			}else{
@@ -641,7 +673,7 @@ public class ResultDisplay extends JFrame {
 				}else{
 					completedTrade.add(new ResultData(tmpBidFirstID,tmpID,tmpPrice,tmpVol,tmpTime));
 					tmpBidFirstVol -= tmpVol;
-					myBidList.updateFirst(tmpBidFirstID,tmpBidFirstPrice, tmpBidFirstVol, tmpBidFirstTime);
+					myBidList.updateFirst(tmpBidFirstVol);
 					series3.add(finishTime,tmpPrice);
 				}
 			}else{
@@ -650,6 +682,7 @@ public class ResultDisplay extends JFrame {
 		}else{
 			myAskList.add(tmpID,tmpPrice,tmpVol,tmpTime);
 		}
+		}
+	 */
 
-	}
 }

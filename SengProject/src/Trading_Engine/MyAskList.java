@@ -87,8 +87,8 @@ public class MyAskList {
 		allID.remove(i);
 	}
 
-	public void updateFirst(long tmpID, double tmpPrice, int tmpVol, Time tmpTime) {
-		myList.get(0).updateValue(tmpID,tmpPrice,tmpVol,tmpTime);
+	public void updateFirst(int tmpVol) {
+		myList.get(0).updateVol(tmpVol);
 	}
 
 	public int getError() {

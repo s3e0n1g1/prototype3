@@ -237,7 +237,7 @@ public class Mainmenu extends JFrame{
 				}else{
 					completedTrade.add(new ResultData(tmpID,tmpAskFirstID,tmpAskFirstPrice,tmpVol,tmpTime));
 					tmpAskFirstVol -= tmpVol;
-					myAskList.updateFirst(tmpAskFirstID, tmpAskFirstPrice, tmpAskFirstVol, tmpAskFirstTime);
+					myAskList.updateFirst(tmpAskFirstVol);
 				}
 			}else{
 				myBidList.add(tmpID,tmpPrice,tmpVol,tmpTime);
@@ -267,7 +267,7 @@ public class Mainmenu extends JFrame{
 				}else{
 					completedTrade.add(new ResultData(tmpBidFirstID,tmpID,tmpPrice,tmpVol,tmpTime));
 					tmpBidFirstVol -= tmpVol;
-					myBidList.updateFirst(tmpBidFirstID,tmpBidFirstPrice, tmpBidFirstVol, tmpBidFirstTime);
+					myBidList.updateFirst(tmpBidFirstVol);
 				}
 			}else{
 				myAskList.add(tmpID,tmpPrice,tmpVol,tmpTime);

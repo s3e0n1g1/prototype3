@@ -1,5 +1,6 @@
 package Selecting_Algothrim;
 
+
 /**
  * an Object which consist of 2 field , type and price. type can be "buy" or it can be "sell"
  * types are in lower case.

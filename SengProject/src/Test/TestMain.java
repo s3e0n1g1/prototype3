@@ -11,6 +11,10 @@ import gui.ChooseStrategy;
 import gui.CopyOfOrderbookTable;
 import gui.OrderbookTableNew;
 
+import Deprecated.newMomentum;
+import Deprecated.orderObject;
+import Deprecated.reverseMomentum;
+import Deprecated.signalObject;
 import Selecting_Algothrim.*;
 
 import org.junit.Test;

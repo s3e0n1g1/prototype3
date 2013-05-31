@@ -4,7 +4,7 @@ import java.util.LinkedList;
 
 import java.sql.Time;
 
-import New.*;
+import Selecting_Algothrim.*;
 import Trading_Engine.*;
 
 import org.junit.Assert;
@@ -21,7 +21,6 @@ public class TestStrategyAndEval {
 		
 		lecMS strategy = new lecMSMomentum();
 		LinkedList<ResultData> tradeListPast = new LinkedList<ResultData>();
-		LinkedList<ResultData> newTradeList = new LinkedList<ResultData>();
 		LinkedList<Long> orderID = new LinkedList<Long>();
 		LinkedList<signalObject> signalList;
 
@@ -37,7 +36,6 @@ public class TestStrategyAndEval {
 		int tempVol;
 		long timeVal = 1;
 		Time tempTime = new Time(timeVal);
-		int tempSize;
 		MyBidList bidList = new MyBidList();
 		MyAskList askList = new MyAskList();
 

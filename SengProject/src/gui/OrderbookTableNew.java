@@ -6,7 +6,7 @@ import javax.swing.table.AbstractTableModel;
 
 public class OrderbookTableNew extends AbstractTableModel {
 
-	private String[] columnNames =  {"BidID", "AskId", "Price", "Volume", "Timestamp","Profit"};
+	private String[] columnNames =  {"BidID", "AskId", "Price", "Volume", "Timestamp"};
 	private LinkedList<Object[]> data2;
 	
 	 public OrderbookTableNew() {

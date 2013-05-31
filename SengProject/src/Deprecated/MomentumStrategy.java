@@ -2,7 +2,6 @@ package Deprecated;
 import java.util.LinkedList;// I'm not sure if it's a good choice any other idea ?
 import java.util.Arrays;
 
-import Selecting_Algothrim.GeneratedSignal;
 
 
 /**

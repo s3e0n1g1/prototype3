@@ -35,10 +35,10 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYDataset;
 
-import New.lecMS;
-import Selecting_Algothrim.newMomentum;
-import Selecting_Algothrim.orderObject;
-import Selecting_Algothrim.signalObject;
+import Deprecated.newMomentum;
+import Deprecated.orderObject;
+import Deprecated.signalObject;
+import Selecting_Algothrim.lecMS;
 import Trading_Engine.GraphData;
 import Trading_Engine.MyAskList;
 import Trading_Engine.MyBidList;
@@ -104,6 +104,9 @@ public class StrategySelected extends JFrame {
 	public JLabel DeletedLines;
 	public JLabel BidList;
 	public JLabel AskList;
+	public JLabel StrategyBuy;
+	public JLabel StrategySell;
+	public JLabel StrategyEndResult;
 
 	private JPanel analysisPanel() {
 		JPanel toppanel = new JPanel();
@@ -111,7 +114,7 @@ public class StrategySelected extends JFrame {
 		JPanel panel = new JPanel();
 		JPanel panel2 = new JPanel();
 
-		Dimension d = new Dimension(200,150);
+		Dimension d = new Dimension(200,250);
 		panel.setLayout((new BoxLayout(panel, BoxLayout.PAGE_AXIS)));
 
 		panel.setSize(d);
@@ -124,7 +127,7 @@ public class StrategySelected extends JFrame {
 		panel2.setMaximumSize(d);
 		
 		Strategy = new JLabel("strategy");
-		Threshold = new JLabel(Integer.toString(ResultDisplay.Threshold));
+		Threshold = new JLabel(Double.toString(ResultDisplay.Threshold));
 
 		LinesRead = new JLabel("lines read");
 		MatchedLines = new JLabel("matched");
@@ -133,16 +136,22 @@ public class StrategySelected extends JFrame {
 		DeletedLines = new JLabel("delete text");
 		BidList = new JLabel("total text");
 		AskList = new JLabel("tradelines text");
+		StrategyBuy = new JLabel("strategy buy");
+		StrategySell = new JLabel("strategy sell");
+		StrategyEndResult = new JLabel("strategy endResult");
 		
-		panel.add(new JLabel("Strategy selected:"));
-		panel.add(new JLabel("Threshold entered:"));
-		panel.add(new JLabel("Total lines:"));
-		panel.add(new JLabel("Total Lines matched:"));	
-		panel.add(new JLabel("Strategy generated matched:"));	
-		panel.add(new JLabel("Lines update:"));	
-		panel.add(new JLabel("Lines deleted:"));
-		panel.add(new JLabel("Bid list contains"));	
-		panel.add(new JLabel("Ask list contains"));
+		panel.add(new JLabel("Strategy selected: "));
+		panel.add(new JLabel("Threshold entered: "));
+		panel.add(new JLabel("Total lines: "));
+		panel.add(new JLabel("Total Lines matched: "));	
+		panel.add(new JLabel("Lines update: "));	
+		panel.add(new JLabel("Lines deleted: "));
+		panel.add(new JLabel("Bid list left with: "));	
+		panel.add(new JLabel("Ask list left with: "));
+		panel.add(new JLabel("Strategy Buy generated: "));
+		panel.add(new JLabel("Strategy Sell generated: "));	
+		panel.add(new JLabel("Strategy generated matched: "));	
+		panel.add(new JLabel("End Result Percentage: "));	
 
 
 		Strategy.setText(ResultDisplay.Strategy);
@@ -151,11 +160,14 @@ public class StrategySelected extends JFrame {
 		panel2.add(Threshold);
 		panel2.add(LinesRead);
 		panel2.add(MatchedLines);
-		panel2.add(StrategyMatched);
 		panel2.add(UpdatedLines);
 		panel2.add(DeletedLines);
 		panel2.add(BidList);
 		panel2.add(AskList);
+		panel2.add(StrategyBuy);
+		panel2.add(StrategySell);
+		panel2.add(StrategyMatched);
+		panel2.add(StrategyEndResult);
 
 		LinesRead.setText(strategyResult.get(0));
 		MatchedLines.setText(strategyResult.get(1));
@@ -164,6 +176,9 @@ public class StrategySelected extends JFrame {
 		DeletedLines.setText(strategyResult.get(4));
 		BidList.setText(strategyResult.get(5));
 		AskList.setText(strategyResult.get(6));
+		StrategyEndResult.setText(strategyResult.get(7));
+		StrategyBuy.setText(Integer.toString(strategyBid.size()));
+		StrategySell.setText(Integer.toString(strategyAsk.size()));
 
 		analysispanel.add(panel);
 		analysispanel.add(panel2);
@@ -228,13 +243,12 @@ public class StrategySelected extends JFrame {
 			if(allCompletedTrade.get(i).getBuyID() < 0){
 				Object [] fakedata1 = {allCompletedTrade.get(i).getBuyID(),allCompletedTrade.get(i).getAskID(),
 						"$ " + allCompletedTrade.get(i).getPrice(), allCompletedTrade.get(i).getVol()
-						, allCompletedTrade.get(i).getTime(),0};
+						, allCompletedTrade.get(i).getTime()};
 				strategyTable.addElement(fakedata1);
 			}else if(allCompletedTrade.get(i).getAskID() < 0){
-				double tmpProfit = (allCompletedTrade.get(i).getPrice() - allCompletedTrade.get(i-1).getPrice())/allCompletedTrade.get(i).getPrice();
 				Object [] fakedata1 = {allCompletedTrade.get(i).getBuyID(),allCompletedTrade.get(i).getAskID(),
 						"$ " + allCompletedTrade.get(i).getPrice(), allCompletedTrade.get(i).getVol()
-						, allCompletedTrade.get(i).getTime(),tmpProfit};
+						, allCompletedTrade.get(i).getTime()};
 				strategyTable.addElement(fakedata1);
 			}
 		}
@@ -294,8 +308,11 @@ public class StrategySelected extends JFrame {
 		c.weightx = 0.5;
 		c.gridx = 0;
 		c.gridy = 0;
-		panel.add(graphpanel,c);
-		//panel.add(config);
+		panel.add(graphpanel,c );
+		c.gridx = 2;
+		c.gridy = 1;
+		c.fill = GridBagConstraints.VERTICAL;
+		c.weightx = 2;
 		return panel;
 	}
 

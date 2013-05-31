@@ -112,6 +112,7 @@ public class LineGraph extends JPanel{
         	renderer.setSeriesLinesVisible(0, false);
             renderer.setSeriesLinesVisible(1, false);
             renderer.setSeriesLinesVisible(2, false);
+            renderer.setSeriesShapesFilled(0, false);
         }else{
         	renderer.setSeriesLinesVisible(0, false);
         	renderer.setSeriesShapesVisible(1, false);

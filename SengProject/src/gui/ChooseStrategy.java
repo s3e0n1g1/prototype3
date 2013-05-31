@@ -15,7 +15,7 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 	private JTextField stockAmount = null;
 	private JComboBox strategy = null;
 	private String[] strategies = {"Momentum", "Mean Reversion"};
-	private int thresholdno = 5; //default
+	private double thresholdno = 0.001; //default
 	private int stockNumber = 10; //default
 	public boolean run = false;
 	
@@ -35,7 +35,7 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 		pickpanel.add(strategy);
 		panel.add(pickpanel);
 		JPanel pickpanel2 = new JPanel();
-		threshold = new JTextField("5");
+		threshold = new JTextField("0.001");
 		pickpanel2.add(new JLabel("Threshold: "));
 		threshold.setPreferredSize(new Dimension(100,25));
 		pickpanel2.add(threshold);
@@ -58,12 +58,12 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 		setVisible(true);
 	}
 
-	public int getThreshold () {
+	public double getThreshold () {
 		return thresholdno;
 	}
 	
 	public int getStockAmount () {
-		return thresholdno;
+		return stockNumber;
 	}
 	public String getStrategy() {
 		return (String)strategy.getSelectedItem();
@@ -72,12 +72,12 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (ok == e.getSource()){
 			try {
-				Integer.parseInt(threshold.getText());
+				Double.parseDouble(threshold.getText());
 			} catch (NumberFormatException e1){
 				threshold.setText("Please enter a number");
 				return;
 			}
-			thresholdno = Integer.parseInt(threshold.getText());
+			thresholdno = Double.parseDouble(threshold.getText());
 			try {
 				Integer.parseInt(stockAmount.getText());
 			} catch (NumberFormatException e1){

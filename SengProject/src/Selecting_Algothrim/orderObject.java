@@ -1,19 +1,27 @@
 package Selecting_Algothrim;
 
+
 public class orderObject {
 	
-	public orderObject(int aQuantity, double aPrice){
+	public orderObject( int aNumber, int aQuantity, int aPrice){
+	
+		id = aNumber;
 		qauntity = aQuantity;
 		price = aPrice;
 	}
 	
+	
+	public int getId(){
+		return id;
+	}
 	public int getQauntity(){
 		return qauntity;
 	}
-	public double getPrice(){
+	public int getPrice(){
 		return price;
 	}
 	
+	private int id;
 	private int qauntity;
-	private double price;
+	private int price;
 }

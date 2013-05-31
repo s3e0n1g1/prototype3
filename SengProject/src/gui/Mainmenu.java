@@ -18,11 +18,11 @@ import org.jfree.ui.RefineryUtilities;
 import org.junit.runner.Result;
 
 
-import New.lecMS;
-import New.lecMSMomentum;
-import Selecting_Algothrim.newMomentum;
-import Selecting_Algothrim.orderObject;
-import Selecting_Algothrim.signalObject;
+import Deprecated.newMomentum;
+import Deprecated.orderObject;
+import Deprecated.signalObject;
+import Selecting_Algothrim.lecMS;
+import Selecting_Algothrim.lecMSMomentum;
 import Trading_Engine.MyAskList;
 import Trading_Engine.MyBidList;
 import Trading_Engine.ResultData;

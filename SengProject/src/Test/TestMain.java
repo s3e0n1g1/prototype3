@@ -8,7 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.JTable;
 
 import gui.ChooseStrategy;
-import gui.OrderbookTable;
+import gui.CopyOfOrderbookTable;
 import gui.OrderbookTableNew;
 
 import Selecting_Algothrim.*;
@@ -141,7 +141,7 @@ public class TestMain {
 	@Test
 	//fix
 	public void testOrderbookTable(){
-		OrderbookTable testTableModel = new OrderbookTable();
+		CopyOfOrderbookTable testTableModel = new CopyOfOrderbookTable();
 		JTable testTable = new JTable();
 		testTable.setModel(testTableModel);
 		 //{"BidID", "AskId", "Price", "Volume", "Timestamp"};

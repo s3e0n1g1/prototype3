@@ -21,7 +21,7 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 	
 	public ChooseStrategy(JFrame frame) {
 		super (frame, true);
-		setSize(350,150);
+		setSize(350,250);
 		setResizable(false);
 		setLocationRelativeTo(frame);
 		setTitle("Run Strategy");
@@ -37,12 +37,14 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 		JPanel pickpanel2 = new JPanel();
 		threshold = new JTextField("5");
 		pickpanel2.add(new JLabel("Threshold: "));
+		threshold.setPreferredSize(new Dimension(100,25));
 		pickpanel2.add(threshold);
 		panel.add(pickpanel2);
 		JPanel pickpanel3 = new JPanel();
 		stockAmount = new JTextField("10");
-		pickpanel2.add(new JLabel("stock amount: "));
-		pickpanel2.add(threshold);
+		pickpanel3.add(new JLabel("stock amount: "));
+		stockAmount.setPreferredSize(new Dimension(100,25));
+		pickpanel3.add(stockAmount);
 		panel.add(pickpanel3);
 		JPanel buttons = new JPanel();
 		ok = new JButton("Select");

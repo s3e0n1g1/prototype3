@@ -53,17 +53,13 @@ public class Mainmenu extends JFrame{
 		JMenuItem loadcsv = new JMenuItem("Load CSV File");
 		file.add(loadcsv);
 		file.add(quit);
-		JMenu help = new JMenu("Help");		
-		//JMenuItem about = new JMenuItem("About");
+		JMenu help = new JMenu("Help");	
 		JMenuItem howtouse = new JMenuItem("How To Use");
-		//help.add(about);
 		help.add(howtouse);
 
 		menubar.add(help);
 		setJMenuBar(menubar);
 		pane.add(consolePanel(result));
-
-		//pane.setBorder(new EmptyBorder(5, 0, 0, 0) );
 
 		howtouse.addActionListener(
 				new ActionListener() {
@@ -87,10 +83,6 @@ public class Mainmenu extends JFrame{
 								console.append("Cannot insert csv to database\n");
 							}
 							myResult.setVisible(true);
-							//runNewStrategy();
-
-							//String tmp = myDB.getRowCount();
-							//console.append(tmp);
 							console.append("CSV loaded.\nPlease select a strategy.\n");
 						}
 					}
@@ -163,159 +155,4 @@ public class Mainmenu extends JFrame{
 
 		return consoletext;
 	}
-
-	//DEFAULT STRATEGY IMPLEMENTED 
-	protected void runNewStrategy() {
-		try {
-			ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
-			MyBidList myBidList = new MyBidList();
-			MyAskList myAskList = new MyAskList();
-			LinkedList<ResultData> completedTrade = new LinkedList<ResultData>();
-			int count = 0;
-			String tmp;
-			String tmpType;
-			double tmpPrice;
-			int tmpVol;
-			long tmpID = 0;
-			int buySig = 0;
-			int sellSig = 0;
-			double profit = 0;
-			int updateLines = 0;
-			int deleteLines = 0;
-			Time tmpTime;
-
-			lecMSMomentum strategy = new lecMSMomentum();
-
-			while (set.next()){
-				tmp = set.getString(5);
-				tmpType = set.getString(14);
-				tmpTime = set.getTime(3);
-				if(tmp.equalsIgnoreCase("ENTER")){
-					tmpPrice = set.getFloat(6);
-					tmpVol = set.getInt(7);
-					if(tmpType.equalsIgnoreCase("B")){
-						tmpID = set.getLong(12);
-						//insertBidList(myBidList, myAskList, completedTrade,
-								//tmpPrice, tmpVol, tmpID, tmpTime);
-					}else if(tmpType.equalsIgnoreCase("A")){
-						tmpID = set.getLong(13);
-						//insertAskList(myBidList, myAskList, completedTrade,
-								//tmpPrice, tmpVol, tmpID, tmpTime);
-					}
-
-				}else if (tmp.equalsIgnoreCase("AMEND")){
-					updateLines++;
-					tmpPrice = set.getFloat(6);
-					tmpVol = set.getInt(7);
-					if(tmpType.equalsIgnoreCase("B")){
-						tmpID = set.getLong(12);
-						//myBidList.update(tmpID,tmpPrice,tmpVol,tmpTime);
-
-					}else if(tmpType.equalsIgnoreCase("A")){
-						tmpID = set.getLong(13);
-
-					}
-				}else if (tmp.equalsIgnoreCase("DELETE")){
-					deleteLines++;
-					if(tmpType.equalsIgnoreCase("B")){
-						tmpID = set.getLong(12);
-						myBidList.deleteOne(tmpID);
-					}else if(tmpType.equalsIgnoreCase("A")){
-						tmpID = set.getLong(13);
-
-					}
-				}
-				count++;
-			};
-			//System.out.println("count : " + count);
-			Mainmenu.console.append("Total lines read : " + count + "\n");
-			Mainmenu.console.append("Total lines matched : " + completedTrade.size() + "\n");
-			Mainmenu.console.append("Total lines update : " + updateLines + "\n");
-			Mainmenu.console.append("Total lines delete : " + deleteLines + "\n");
-			Mainmenu.console.append("bid list contains " +  myBidList.getLength() + ".\n");
-			Mainmenu.console.append("ask list contains " +  myAskList.getLength() + ".\n");
-
-
-
-			//update jlabels
-			//myResult.LinesRead.setText(Integer.toString( count));
-			//myResult.enterLines.setText(Integer.toString(completedTrade.size()));
-			//myResult.askLines.setText(Integer.toString(updateLines));
-			//myResult.bidLines.setText(Integer.toString(deleteLines));
-			//myResult.tradeLines.setText(Integer.toString(myAskList.getLength()));
-			//myResult.AskList.setText(Integer.toString(myAskList.getLength()));
-
-
-			//ReturnCalculated.setText("212"); //to change value of labels
-
-			set.close();
-		} catch (SQLException e) {
-			System.out.println("In Mainmenu/runStrategy : " + e);
-		}
-	}
-	/*
-	public void insertBidList(MyBidList myBidList, MyAskList myAskList,
-			LinkedList<ResultData> completedTrade, double tmpPrice, int tmpVol,
-			long tmpID, Time tmpTime) {
-		if(myAskList.getLength() > 0){
-			long tmpAskFirstID = myAskList.get(0).getID();
-			double tmpAskFirstPrice = myAskList.get(0).getPrice();
-			int tmpAskFirstVol = myAskList.get(0).getVol();
-			Time tmpAskFirstTime = myAskList.get(0).getTime();
-			if(tmpPrice >= tmpAskFirstPrice){
-				if(tmpVol > tmpAskFirstVol){
-					completedTrade.add(new ResultData(tmpID,tmpAskFirstID,tmpAskFirstVol,tmpAskFirstVol,tmpTime));
-					myAskList.deleteAtIndex(0);
-					tmpAskFirstVol = tmpVol - tmpAskFirstVol;
-					insertBidList(myBidList, myAskList,completedTrade, tmpPrice, tmpAskFirstVol ,tmpID, tmpTime);
-				}else if(tmpVol == tmpAskFirstVol){
-					completedTrade.add(new ResultData(tmpID,tmpAskFirstID,tmpAskFirstPrice,tmpVol,tmpTime));
-					myAskList.deleteAtIndex(0);
-				}else{
-					completedTrade.add(new ResultData(tmpID,tmpAskFirstID,tmpAskFirstPrice,tmpVol,tmpTime));
-					tmpAskFirstVol -= tmpVol;
-					myAskList.updateFirst(tmpAskFirstVol);
-				}
-			}else{
-				myBidList.add(tmpID,tmpPrice,tmpVol,tmpTime);
-			}
-		}else{
-			myBidList.add(tmpID,tmpPrice,tmpVol,tmpTime);
-		}
-	}
-
-	public void insertAskList(MyBidList myBidList, MyAskList myAskList,
-			LinkedList<ResultData> completedTrade, double tmpPrice, int tmpVol,
-			long tmpID, Time tmpTime) {
-		if(myBidList.getLength() > 0){
-			long tmpBidFirstID = myBidList.get(0).getID();
-			double tmpBidFirstPrice = myBidList.get(0).getPrice();
-			int tmpBidFirstVol = myBidList.get(0).getVol();
-			Time tmpBidFirstTime = myBidList.get(0).getTime();
-			if(tmpPrice <= tmpBidFirstPrice){
-				if(tmpVol > tmpBidFirstVol){
-					completedTrade.add(new ResultData(tmpBidFirstID,tmpID,tmpPrice,tmpBidFirstVol,tmpTime));
-					tmpBidFirstVol = tmpVol - tmpBidFirstVol;
-					myBidList.deleteAtIndex(0);
-					insertBidList(myBidList, myAskList,completedTrade, tmpPrice,tmpBidFirstVol ,tmpID, tmpTime);
-				}else if(tmpVol == tmpBidFirstVol){
-					completedTrade.add(new ResultData(tmpBidFirstID,tmpID,tmpPrice,tmpVol,tmpTime));
-					myBidList.deleteAtIndex(0);
-				}else{
-					completedTrade.add(new ResultData(tmpBidFirstID,tmpID,tmpPrice,tmpVol,tmpTime));
-					tmpBidFirstVol -= tmpVol;
-					myBidList.updateFirst(tmpBidFirstVol);
-				}
-			}else{
-				myAskList.add(tmpID,tmpPrice,tmpVol,tmpTime);
-			}
-		}else{
-			myAskList.add(tmpID,tmpPrice,tmpVol,tmpTime);
-		}
-
-	}
-
-
-
-	*/
 }

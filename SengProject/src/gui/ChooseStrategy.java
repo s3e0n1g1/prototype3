@@ -16,7 +16,7 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 	private JComboBox strategy = null;
 	private String[] strategies = {"Momentum", "Mean Reversion"};
 	private double thresholdno = 0.001; //default
-	private int stockNumber = 10; //default
+	private int stockNumber = 100; //default
 	public boolean run = false;
 	
 	public ChooseStrategy(JFrame frame) {
@@ -41,13 +41,13 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 		pickpanel2.add(threshold);
 		panel.add(pickpanel2);
 		JPanel pickpanel3 = new JPanel();
-		stockAmount = new JTextField("10");
+		stockAmount = new JTextField("100");
 		pickpanel3.add(new JLabel("stock amount: "));
 		stockAmount.setPreferredSize(new Dimension(100,25));
 		pickpanel3.add(stockAmount);
 		panel.add(pickpanel3);
 		JPanel buttons = new JPanel();
-		ok = new JButton("Select");
+		ok = new JButton("Ok");
 		cancel = new JButton("Cancel");
 		buttons.add(ok);
 		buttons.add(cancel);

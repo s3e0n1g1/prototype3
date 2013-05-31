@@ -8,14 +8,12 @@ import javax.swing.JFrame;
 import javax.swing.JTable;
 
 import gui.ChooseStrategy;
-import gui.CopyOfOrderbookTable;
-import gui.OrderbookTableNew;
+import gui.FinalOrderbookTable;
 
 import Deprecated.newMomentum;
 import Deprecated.orderObject;
 import Deprecated.reverseMomentum;
 import Deprecated.signalObject;
-import Selecting_Algothrim.*;
 
 import org.junit.Test;
 public class TestMain {
@@ -145,7 +143,7 @@ public class TestMain {
 	@Test
 	//fix
 	public void testOrderbookTable(){
-		CopyOfOrderbookTable testTableModel = new CopyOfOrderbookTable();
+		FinalOrderbookTable testTableModel = new FinalOrderbookTable();
 		JTable testTable = new JTable();
 		testTable.setModel(testTableModel);
 		 //{"BidID", "AskId", "Price", "Volume", "Timestamp"};

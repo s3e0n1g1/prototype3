@@ -1,22 +1,15 @@
 package gui;
 
-import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedList;
-
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -31,16 +24,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
-
-import org.jfree.data.xy.XYSeries;
-
-import Deprecated.newMomentum;
-import Selecting_Algothrim.EvaluatorLec;
-import Selecting_Algothrim.ResultGenerator;
-import Selecting_Algothrim.lecMS;
 import Selecting_Algothrim.lecMSMomentum;
 import Selecting_Algothrim.lecMSReverse;
-import Selecting_Algothrim.orderObject;
 import Selecting_Algothrim.resultObjectL;
 import Selecting_Algothrim.signalObject;
 import Trading_Engine.GraphData;
@@ -223,28 +208,14 @@ public class ResultDisplay extends JFrame {
 
 		return toppanel;
 	}
-	private CopyOfOrderbookTable ordertable;
+	private FinalOrderbookTable ordertable;
 
 	private JPanel orderbookPanel() {
 		JPanel panel = new JPanel();
-		ordertable = new CopyOfOrderbookTable();
-
-		//Date date= null;
-
+		ordertable = new FinalOrderbookTable();
 		JTable buybook = new JTable();
-
 		buybook.setModel(ordertable);
-		/*
-		String originaltimestamp = "2010-07-14 09:00:02";
-		String timestamp = new SimpleDateFormat("HH:mm").format(date); // 9:00
 
-		try {
-			date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(originaltimestamp);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		 */
-		//System.out.println("sdfsdfsd");
 		try {
 			ResultSet set = myDB.getResultSet("SELECT * FROM old_trade_list;");
 			while(set.next()){
@@ -295,7 +266,6 @@ public class ResultDisplay extends JFrame {
 					Double tmpPrice = set.getDouble(6);
 					Time tmpTime = set.getTime(3);
 					double finishTime = tmpTime.getHours() + (tmpTime.getMinutes()/60.0);
-					//System.out.println("finishTime: " + finishTime + " = " + tmpTime.getHours() + " + " + (tmpTime.getMinutes()/60.0));
 					if(tmpType.equalsIgnoreCase("B")){
 						LineGraph.addToDataset(finishTime, tmpPrice);
 					}else if(tmpType.equalsIgnoreCase("A")){
@@ -312,10 +282,7 @@ public class ResultDisplay extends JFrame {
 		}catch (SQLException e) {
 			System.out.println("In Mainmenu/insertGraph : " + e);
 		}
-
-		//LineGraph.addToDataset(546.0, 4.6);
-		//loop through database
-
+		
 		//finalise dataset for graph
 		returntimegraph.finishGraph(true);
 		returntimegraph.setVisible(true);
@@ -339,132 +306,11 @@ public class ResultDisplay extends JFrame {
 		c.gridy = 1;
 		c.fill = GridBagConstraints.VERTICAL;
 		c.weightx = 2;
-		//panel.add(config);  <--- uncomment to display on gui
 
 		return panel;
 	}
+	
 	private StrategySelected myStrategyResult; 
-	/*
-	protected void runStrategy() {
-		try {
-			ResultSet set = myDB.getResultSet("SELECT * FROM all_list;");
-			if(set != null){
-				int count = 0;
-				String tmp;
-				String tmpType;
-				double tmpPrice;
-				int tmpVol;
-				long tmpID = 0;
-				int buySig = 0;
-				int sellSig = 0;
-				double profit = 0;
-				int tmpCount1 = 0;
-				int tmpCount2 = 0;
-				newMomentum moment = new newMomentum();
-				signalObject tempSignal;
-				signalObject lastBuySig = null;
-				orderObject lastSale = new orderObject( -1, -1);
-				orderObject lastBuy = new orderObject( -1, -1);
-				myDB.initTwoList();
-				while (set.next()){
-					tmp = set.getString(5);
-					tmpType = set.getString(14);
-					if(tmp.equalsIgnoreCase("ENTER")){
-						tmpPrice = set.getDouble(6);
-						tmpVol = set.getInt(7);
-						moment.addTrade(tmpPrice);
-						tempSignal = moment.generateOrderSignal(lastSale, lastBuy);
-						if(tmpType.equalsIgnoreCase("B")){
-							tmpID = set.getLong(12);
-							lastBuy = new orderObject(tmpVol,tmpPrice);
-							myDB.insertBidList(tmpID,tmpPrice,tmpVol);
-						}else if(tmpType.equalsIgnoreCase("A")){
-							tmpID = set.getLong(13);
-							lastSale = new orderObject(tmpVol,tmpPrice);
-							myDB.insertAskList(tmpID,tmpPrice,tmpVol);
-						}
-						if(tempSignal.getType().equalsIgnoreCase("buy")){
-							buySig++;
-							moment.getreceiptNumber(buySig);
-							lastBuySig = tempSignal;
-							//System.out.println("buy generated - count " + count);
-						}else if(tempSignal.getType().equalsIgnoreCase("sell")){
-							moment.getreceiptNumber(sellSig);
-							profit += (tempSignal.getPrice() - lastBuySig.getPrice());
-							sellSig++;
-							//System.out.println("sell generated - count " + count);
-						}
-					}else if (tmp.equalsIgnoreCase("AMEND")){
-
-						tmpPrice = set.getLong(12);
-						tmpVol = set.getInt(7);
-						if(tmpType.equalsIgnoreCase("B")){
-							tmpID = set.getLong(12);
-							myDB.updateBidList(tmpID, tmpPrice, tmpVol);
-						}else if(tmpType.equalsIgnoreCase("A")){
-							tmpID = set.getLong(13);
-							myDB.updateBidList(tmpID, tmpPrice, tmpVol);
-						}
-					}else if (tmp.equalsIgnoreCase("DELETE")){
-
-						if(tmpType.equalsIgnoreCase("B")){
-							tmpID = set.getLong(12);
-							myDB.deleteOneFromList(tmpID, "bid_list");
-						}else if(tmpType.equalsIgnoreCase("A")){
-							tmpID = set.getLong(13);
-							myDB.deleteOneFromList(tmpID, "ask_list");
-						}
-					}
-					count++;
-				};
-				System.out.println("count : " + count);
-				Mainmenu.console.append("Total lines read : " + count + "\n");
-				Mainmenu.console.append("Strategy generate " + buySig + " buy signals.\n");
-				Mainmenu.console.append("Strategy generate " + sellSig + " sell signals.\n");
-				Mainmenu.console.append("Profit gain: " + profit + "\n");
-				myDB.printTwoList();
-				myDB.closeTwoList();
-			}else{
-				System.out.println("set equals null");
-			}
-			ResultSet bidleft = myDB.getResultSet("SELECT count(*) FROM bid_list;");
-			ResultSet askleft = myDB.getResultSet("SELECT count(*) FROM ask_list;");
-			if(bidleft!=null){
-				if(bidleft.next()){
-					Mainmenu.console.append("bid_list left with " + bidleft.getString(1) + " lines.\n");
-				}
-			}
-			if(askleft!=null){
-				if(askleft.next()){
-					Mainmenu.console.append("ask_list left with " + askleft.getString(1) + " lines.\n");
-				}
-			}
-
-
-			if(rs.getLength() > 0){
-				//int i = 0;
-				double result;
-
-				MomentumStrategy ms = new MomentumStrategy();
-				ms.runStrategy(rs.getAllPrice());
-				result = ms.evaluteTheStrategy();
-				console.append("Average return of " + Double.toString(result) + "\n");
-				String signal = "Buy";
-
-				if (result > 0.0)
-					signal = "Sell";
-				console.append("Evaluating strategy based on: "+ signal + " Signal \n");
-			} else {
-				console.append("rs null");
-			}
-			askleft.close();
-			bidleft.close();
-			set.close();
-		} catch (SQLException e) {
-			System.out.println("In Mainmenu/runStrategy : " + e);
-		}
-	}
-	 */
 	//IMPLEMENT TRADING STRATEGY HERE
 
 	protected void runReversionStrategy() {
@@ -601,7 +447,6 @@ public class ResultDisplay extends JFrame {
 			while(!listOfResult.isEmpty()){
 				tempResult = listOfResult.poll();
 				if(tempResult.getPercentage() != Double.NEGATIVE_INFINITY){
-					//Mainmenu.console.append("At time: " + tempResult.getTime() + "We get this " + tempResult.getPercentage() + " benefit. \n");
 					endResult += tempResult.getPercentage();
 					endCount++;
 				}
@@ -757,7 +602,6 @@ public class ResultDisplay extends JFrame {
 			while(!listOfResult.isEmpty()){
 				tempResult = listOfResult.poll();
 				if(tempResult.getPercentage() != Double.NEGATIVE_INFINITY){
-					//Mainmenu.console.append("At time: " + tempResult.getTime() + "We get this " + tempResult.getPercentage() + " benefit. \n");
 					endResult += tempResult.getPercentage();
 					endCount++;
 				}
@@ -820,7 +664,6 @@ public class ResultDisplay extends JFrame {
 		}
 		return numberOfTrade;
 	}
-
 
 	public void insertBidList(MyBidList myBidList, MyAskList myAskList,
 			LinkedList<ResultData> completedTrade, double tmpPrice, int tmpVol,

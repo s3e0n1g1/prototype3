@@ -2,6 +2,14 @@ package Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.LinkedList;
+
+import javax.swing.JFrame;
+import javax.swing.JTable;
+
+import gui.ChooseStrategy;
+import gui.OrderbookTable;
+import gui.OrderbookTableNew;
 
 import Selecting_Algothrim.*;
 
@@ -117,9 +125,9 @@ public class TestMain {
 	public void reTestShareQuantity() {
 		reverseMomentum testStrategy = new reverseMomentum();
 		assertTrue("Default share qty is zero", testStrategy.isShareQuantityZero());
-		// not sure how finishShare works
 	}
 	@Test
+	
 	public void reTestReceipt () {
 		reverseMomentum testStrategy = new reverseMomentum();
 		assertEquals("Default number of Buy Receipts", 0, testStrategy.getBuyReceipt().size());
@@ -130,35 +138,53 @@ public class TestMain {
 		assertEquals("Added 1 sell receipt", 1, testStrategy.getSellReceipt().size());
 	}
 	//GUI TESTS
-	/*
 	@Test
-	fix
-	public void testOrderBook(){
+	//fix
+	public void testOrderbookTable(){
 		OrderbookTable testTableModel = new OrderbookTable();
 		JTable testTable = new JTable();
 		testTable.setModel(testTableModel);
-		Object[][] testData = {
-				{"abc", new Long(12), new Double(34), new Integer(56), new Integer(1) },
-		};
-		//testTableModel.setData(testData);
-		//assertEquals("Column Count is 5", 5, testTableModel.getColumnCount());
-		//assertEquals("Testing getValueAt", "abc", testTableModel.getValueAt(1,0));
-		//testTableModel.setValueAt("def", 0, 0);
-		//assertEquals("Testing setValueAt for changed value in column 1", "def", testTableModel.getValueAt(0,0));
-		//assertEquals("Testing getValueAt ", 56, testTableModel.getValueAt(0,3));
-		testTableModel.setValueAt(100, 0, 3);
-		//assertEquals("Testing getValueAt for changed value in column 4", 100, testTableModel.getValueAt(0,3));
-		//assertEquals("Testing for Row count", 1, testTableModel.getRowCount());
-		Object[][]testData2 = {
-				{"abc", new Long(12), new Double(34), new Integer(56) },
-				{"abc", new Long(12), new Double(34), new Integer(56) },
-				{"def", new Long(11), new Double(87), new Integer(41) }
-		};
-		//testTableModel.setData(testData2);
-		assertEquals("Testing for increased Row count", 3, testTableModel.getRowCount());		
+		 //{"BidID", "AskId", "Price", "Volume", "Timestamp"};
+		Object[] testInput= {new Long(100), new Long(100), new Double(34), new Integer(13), "time"};
+		testTableModel.addElement(testInput);
+		assertEquals("Column 1 is BidID","BidID", testTableModel.getColumnName(0));
+		assertEquals("Column 2 is BidID","AskId", testTableModel.getColumnName(1));
+		assertEquals("Column 3 is BidID","Price", testTableModel.getColumnName(2));
+		assertEquals("Column 4 is BidID","Volume", testTableModel.getColumnName(3));
+		assertEquals("Column 5 is BidID","Timestamp", testTableModel.getColumnName(4));
 		
+		assertEquals("Insert 1 row of data",1, testTableModel.getRowCount());	
+		assertEquals("Column Count is 5", 5, testTableModel.getColumnCount());
+		
+		testTableModel.setValueAt(new Long(99), 0, 0);
+		assertEquals("Testing setValueAt", new Long(99), testTableModel.getValueAt(0,0));
+		testTableModel.addElement(testInput);
+		assertEquals("Testing addElement for second line",2, testTableModel.getRowCount());
+		testTableModel.setValueAt(100, 0, 3);
+		assertEquals("Testing getValueAt for changed value in column 4", 100, testTableModel.getValueAt(0,3));
+		testTableModel.addElement(testInput);
+		assertEquals("Testing for Row count", 3, testTableModel.getRowCount());
+		
+		LinkedList<Object[]> testDataSet = new LinkedList<Object[]>();
+		testDataSet.add(testInput);
+		testDataSet.add(testInput);
+		testDataSet.add(testInput);
+		testDataSet.add(testInput);
+		testDataSet.add(testInput);
+		
+		testTableModel.setData(testDataSet);
+		assertEquals("Updated new dataset", 5, testTableModel.getRowCount());		
+	}
+	//@Test
+	//to test, uncomment @Test, and enter 5 in threshold when dialog appears
+	public void testChooseStrategyDialog () {
+		JFrame testFrame = new JFrame();
+		ChooseStrategy testDialog = new ChooseStrategy(testFrame);
+		testDialog.setVisible(false);
+		testDialog.dispose();
+		assertEquals("Testing default values of output values", 5,testDialog.getThreshold() );
+		assertEquals("Testing default values of output values", "Momentum",testDialog.getStrategy() );
 	}
 	
-	*/
 	
 }

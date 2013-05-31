@@ -52,7 +52,8 @@ import Trading_Engine.myDatabase;
 public class ResultDisplay extends JFrame {
 	public static myDatabase myDB; 
 	private LinkedList<String> overviewResult;
-	public static int Threshold = 5;
+	public static int Threshold;
+	public static int stockAmount;
 	public static String Strategy;
 	private LinkedList<String> strategyResult;
 	private LinkedList<ResultData> completedTrade;
@@ -111,6 +112,7 @@ public class ResultDisplay extends JFrame {
 						if (strat.run == true) {
 							Strategy = strat.getStrategy();
 							Threshold = strat.getThreshold();
+							stockAmount = strat.getStockAmount();
 							runNewStrategy();
 							myStrategyResult = new StrategySelected(strategyResult,completedTrade,askFirstList,bidFirstList,strategyAsk,strategyBid);
 							myStrategyResult.setVisible(true);				
@@ -215,12 +217,11 @@ public class ResultDisplay extends JFrame {
 
 		return toppanel;
 	}
-
-	private OrderbookTable ordertable;
+	private CopyOfOrderbookTable ordertable;
 
 	private JPanel orderbookPanel() {
 		JPanel panel = new JPanel();
-		ordertable = new OrderbookTable();
+		ordertable = new CopyOfOrderbookTable();
 
 		//Date date= null;
 
@@ -493,7 +494,8 @@ public class ResultDisplay extends JFrame {
 			LinkedList<Long> sellOrderID = new LinkedList<Long>();
 			LinkedList<Long> OrderID;
 			lecMSMomentum strategy = new lecMSMomentum();
-			strategy.setAmountToTrade(100); 
+			strategy.setThreShold(Threshold);
+			strategy.setAmountToTrade(stockAmount); 
 
 			long currentID = 0;
 			while (set.next()){

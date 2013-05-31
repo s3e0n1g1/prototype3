@@ -12,9 +12,11 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 	private JButton ok = null;
 	private JButton cancel = null;
 	private JTextField threshold = null;
+	private JTextField stockAmount = null;
 	private JComboBox strategy = null;
 	private String[] strategies = {"Momentum", "Mean Reversion"};
 	private int thresholdno = 5; //default
+	private int stockNumber = 10; //default
 	public boolean run = false;
 	
 	public ChooseStrategy(JFrame frame) {
@@ -32,9 +34,16 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 		pickpanel.add(new JLabel("Select a strategy to run"));
 		pickpanel.add(strategy);
 		panel.add(pickpanel);
-		threshold = new JTextField("Enter a minimum threshold");
-		threshold.setMaximumSize(new Dimension(200,75));
-		panel.add(threshold);
+		JPanel pickpanel2 = new JPanel();
+		threshold = new JTextField("5");
+		pickpanel2.add(new JLabel("Threshold: "));
+		pickpanel2.add(threshold);
+		panel.add(pickpanel2);
+		JPanel pickpanel3 = new JPanel();
+		stockAmount = new JTextField("10");
+		pickpanel2.add(new JLabel("stock amount: "));
+		pickpanel2.add(threshold);
+		panel.add(pickpanel3);
 		JPanel buttons = new JPanel();
 		ok = new JButton("Select");
 		cancel = new JButton("Cancel");
@@ -50,6 +59,10 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 	public int getThreshold () {
 		return thresholdno;
 	}
+	
+	public int getStockAmount () {
+		return thresholdno;
+	}
 	public String getStrategy() {
 		return (String)strategy.getSelectedItem();
 	
@@ -63,6 +76,13 @@ public class ChooseStrategy extends JDialog implements ActionListener {
 				return;
 			}
 			thresholdno = Integer.parseInt(threshold.getText());
+			try {
+				Integer.parseInt(stockAmount.getText());
+			} catch (NumberFormatException e1){
+				stockAmount.setText("Please enter a number");
+				return;
+			}
+			stockNumber = Integer.parseInt(stockAmount.getText());
 			setVisible(false);
 			run = true;
 		} else if (cancel == e.getSource()){

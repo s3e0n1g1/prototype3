@@ -187,13 +187,13 @@ public class StrategySelected extends JFrame {
 		return toppanel;
 	}
 
-	private OrderbookTable ordertable;
+	private CopyOfOrderbookTable ordertable;
 	
 	private OrderbookTableNew strategyTable;
 
 	private JPanel orderbookPanel() {
 		JPanel panel = new JPanel();
-		ordertable = new OrderbookTable();
+		ordertable = new CopyOfOrderbookTable();
 
 		JTable buybook = new JTable();
 		buybook.setModel(ordertable);
